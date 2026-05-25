@@ -158,6 +158,18 @@ enum ActorType {
   admin
 }
 
+enum InviteRole {
+  child
+  witness
+}
+
+enum InviteStatus {
+  active
+  used
+  expired
+  revoked
+}
+
 model User {
   id            String         @id @default(cuid())
   displayName   String
@@ -168,6 +180,8 @@ model User {
   deletedAt     DateTime?
   familyMembers FamilyMember[]
   memberships   Membership[]
+  authSessions  AuthSession[]
+  familyInvites FamilyInvite[] @relation("FamilyInvitesCreatedBy")
   childNotes    ChildNote[]    @relation("ChildNotesByChild")
   auditLogs     AuditLog[]
 }
@@ -188,7 +202,44 @@ model Family {
   diaryEntries          DiaryEntry[]
   childNotes            ChildNote[]
   notifications         Notification[]
+  invites               FamilyInvite[]
   auditLogs             AuditLog[]
+}
+
+model AuthSession {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model LoginToken {
+  id        String    @id @default(cuid())
+  email     String
+  tokenHash String    @unique
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+}
+
+model FamilyInvite {
+  id          String       @id @default(cuid())
+  familyId    String
+  createdById String
+  role        InviteRole
+  tokenHash   String       @unique
+  displayCode String?      @unique
+  maxUses     Int          @default(1)
+  usedCount   Int          @default(0)
+  status      InviteStatus @default(active)
+  createdAt   DateTime     @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  family      Family       @relation(fields: [familyId], references: [id])
+  createdBy   User         @relation("FamilyInvitesCreatedBy", fields: [createdById], references: [id])
 }
 
 model FamilyMember {

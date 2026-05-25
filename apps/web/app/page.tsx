@@ -10,7 +10,7 @@ import {
 import { ContractState } from "@reward/shared/state-machine";
 import Link from "next/link";
 import { RoleSwitcher } from "@/components/role-switcher";
-import { getCurrentMockActor } from "@/lib/server/auth/mock-auth";
+import { getCurrentActor, isMockRoleSwitcherEnabled } from "@/lib/server/auth/session-auth";
 import { prisma } from "@/lib/server/prisma";
 import { RewardRepository } from "@/lib/server/repositories/reward-repository";
 
@@ -44,7 +44,8 @@ function PermissionLine({ allowed, label }: { allowed: boolean; label: string })
 
 export default async function HomePage() {
   const repository = new RewardRepository();
-  const actor = await getCurrentMockActor();
+  const actor = await getCurrentActor();
+  const showMockRoleSwitcher = isMockRoleSwitcherEnabled();
   const family = await repository.getSeedFamily();
   const contract = family?.contracts[0];
   const childId = contract?.childId ?? "seed_child";
@@ -171,6 +172,24 @@ export default async function HomePage() {
                 </Link>
                 <Link
                   className="rounded-panel border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold"
+                  href="/auth/login"
+                >
+                  Pilot login
+                </Link>
+                <Link
+                  className="rounded-panel border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold"
+                  href="/family/new"
+                >
+                  Pilot family
+                </Link>
+                <Link
+                  className="rounded-panel border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold"
+                  href="/parent/invites"
+                >
+                  Child invite
+                </Link>
+                <Link
+                  className="rounded-panel border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold"
                   href="/parent/witness"
                 >
                   Witness invite
@@ -183,10 +202,12 @@ export default async function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="rounded-panel border border-[var(--line)] bg-white/70 p-4">
-              <p className="mb-3 text-sm font-semibold">Current role: {actor.role}</p>
-              <RoleSwitcher currentRole={actor.role} />
-            </div>
+            {showMockRoleSwitcher ? (
+              <div className="rounded-panel border border-[var(--line)] bg-white/70 p-4">
+                <p className="mb-3 text-sm font-semibold">Current role: {actor.role}</p>
+                <RoleSwitcher currentRole={actor.role} />
+              </div>
+            ) : null}
           </div>
         </header>
 
