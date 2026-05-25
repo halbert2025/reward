@@ -9,7 +9,14 @@ export const SESSION_COOKIE = "reward_session";
 const sessionDays = 7;
 
 function authSecret() {
-  return process.env.AUTH_SECRET || "reward-dev-auth-secret";
+  const secret = process.env.AUTH_SECRET;
+  const appEnv = process.env.APP_ENV || process.env.NODE_ENV || "local";
+
+  if ((appEnv === "pilot" || appEnv === "production") && (!secret || secret.length < 32)) {
+    throw new Error("AUTH_SECRET must be set to at least 32 characters for pilot/production.");
+  }
+
+  return secret || "reward-dev-auth-secret";
 }
 
 export function hashToken(token: string) {

@@ -1,5 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
+const appEnv = process.env.APP_ENV || process.env.NODE_ENV || "local";
+const allowSeed = process.env.ALLOW_DEMO_SEED === "true";
+
+if ((appEnv === "pilot" || appEnv === "production") && !allowSeed) {
+  console.error(
+    "Refusing to run demo seed in pilot/production. Set ALLOW_DEMO_SEED=true only for an explicit recovery sandbox.",
+  );
+  process.exit(1);
+}
+
 const prisma = new PrismaClient();
 
 const ids = {

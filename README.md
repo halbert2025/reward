@@ -52,7 +52,13 @@ npm run test
 npm run test:e2e
 npm run prisma:format
 npm run prisma:generate
+npm run env:check
+npm run predeploy:check
 ```
+
+`env:check` validates the local or deployment environment. `predeploy:check`
+also verifies database connectivity and should run before a pilot/production
+deploy.
 
 ## Product Boundaries
 

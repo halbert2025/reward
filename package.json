@@ -17,7 +17,9 @@
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
     "prisma:seed": "prisma db seed --schema prisma/schema.prisma",
-    "verify:seed": "node scripts/verify-seed.mjs"
+    "verify:seed": "node scripts/verify-seed.mjs",
+    "env:check": "node scripts/validate-env.mjs",
+    "predeploy:check": "node scripts/predeploy-check.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"

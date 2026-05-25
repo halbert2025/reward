@@ -24,12 +24,12 @@
 
 ## 3. P2 线上数据库
 
-- [ ] PostgreSQL 测试环境确定。
-- [ ] Prisma migration 流程确定。
-- [ ] seed 数据与真实数据隔离。
-- [ ] production 不自动写入 seed 数据。
-- [ ] 环境变量校验完成。
-- [ ] 迁移和回滚说明完成。
+- [x] PostgreSQL 测试环境策略确定：pilot/production 使用 PostgreSQL，本地继续 SQLite。
+- [x] Prisma migration 流程确定。
+- [x] seed 数据与真实数据隔离。
+- [x] production 不自动写入 seed 数据。
+- [x] 环境变量校验完成。
+- [x] 迁移和回滚说明完成。
 
 ## 4. P3 隐私、同意与退出
 
@@ -95,4 +95,4 @@
 
 当前状态：P0 已完成文档冻结，尚不能发给真实测试家庭。
 
-下一步：执行 P1 Auth & Family Invite。
+下一步：执行 P3 Privacy & Consent Gate。
