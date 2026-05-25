@@ -22,6 +22,13 @@ test.describe("Reward pilot auth and invite flow", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await expect(page).toHaveURL(/\/family\/new/);
+    await expect(page.getByRole("link", { name: "Review pilot notice" })).toBeVisible();
+    await page.getByRole("link", { name: "Review pilot notice" }).click();
+    await expect(page).toHaveURL(/\/pilot\/consent/);
+    await page.getByLabel(/I understand this is a small pilot/).check();
+    await page.getByRole("button", { name: "Accept and continue" }).click();
+    await expect(page).toHaveURL(/\/family\/new\?status=consent-accepted/);
+
     await page.getByLabel("Family name").fill(familyName);
     await page.getByRole("button", { name: "Create family" }).click();
 

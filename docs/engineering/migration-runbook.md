@@ -52,7 +52,8 @@ npm run prisma:migrate
 For hosted pilot/production, use Prisma deploy migrations after the PostgreSQL schema/provider switch is finalized:
 
 ```bash
-npx prisma migrate deploy --schema prisma/schema.prisma
+npm run prisma:postgres-schema
+npx prisma migrate deploy --schema prisma/schema.postgres.prisma
 ```
 
 Do not run `npm run prisma:seed` against a real pilot/production database.

@@ -2,6 +2,13 @@
 
 本文用途：定义 Reward MVP 的隐私边界、家长可见范围、导出范围、封存/删除策略和照片证据最小化原则。本文不是法律意见；正式上线和真实家庭灰度前，必须完成目标市场法务审查。
 
+## Pilot consent and request entry
+
+- Guardian pilot consent is versioned in `docs/safety/pilot-consent-text.md` and implemented at `/pilot/consent`.
+- Parent family creation is blocked until current-version guardian consent exists.
+- Data handling requests are captured at `/privacy/requests`.
+- Request handling follows `docs/safety/data-request-runbook.md`.
+
 ## 1. 家长能查看什么
 
 parent 默认可查看：

@@ -18,6 +18,7 @@
     "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
     "prisma:seed": "prisma db seed --schema prisma/schema.prisma",
     "verify:seed": "node scripts/verify-seed.mjs",
+    "prisma:postgres-schema": "node scripts/write-postgres-schema.mjs",
     "env:check": "node scripts/validate-env.mjs",
     "predeploy:check": "node scripts/predeploy-check.mjs"
   },

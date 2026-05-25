@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
 import { getCurrentActor } from "./auth/session-auth";
 import { createDisplayCode, createUserSession, hashToken } from "./auth/session-auth";
+import { PILOT_CONSENT_VERSION } from "./pilot-consent";
 import { prisma } from "./prisma";
 
 function clean(formData: FormData, key: string) {
@@ -59,6 +60,19 @@ export async function createPilotFamily(formData: FormData) {
     redirect("/family/new?error=family-name");
   }
 
+  const consent = await prisma.pilotConsent.findFirst({
+    where: {
+      userId: actor.id,
+      scope: "guardian_pilot",
+      version: PILOT_CONSENT_VERSION,
+      status: "accepted",
+    },
+  });
+
+  if (!consent) {
+    redirect("/pilot/consent?error=required");
+  }
+
   const family = await prisma.family.create({
     data: {
       name: familyName,
@@ -95,6 +109,11 @@ export async function createPilotFamily(formData: FormData) {
     data: {
       entityId: family.id,
     },
+  });
+
+  await prisma.pilotConsent.update({
+    where: { id: consent.id },
+    data: { familyId: family.id },
   });
 
   redirect("/parent/invites");

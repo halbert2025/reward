@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { createPilotFamily, getParentFamilies } from "@/lib/server/family-invites";
+import { getGuardianPilotConsent } from "@/lib/server/pilot-consent";
 
 type SearchParams = Promise<{
   error?: string;
+  status?: string;
 }>;
 
 export default async function NewFamilyPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const families = await getParentFamilies();
+  const consent = await getGuardianPilotConsent();
 
   return (
     <main className="min-h-screen px-6 py-8 sm:px-10">
@@ -32,6 +35,24 @@ export default async function NewFamilyPage({ searchParams }: { searchParams: Se
           </p>
         ) : null}
 
+        {params.status === "consent-accepted" ? (
+          <p className="rounded-panel border border-[var(--line)] bg-white/70 px-4 py-3 text-sm">
+            Pilot notice accepted. You can now create a test family.
+          </p>
+        ) : null}
+
+        {!consent ? (
+          <section className="rounded-panel border border-[var(--line)] bg-white/70 p-5">
+            <h2 className="text-lg font-semibold">Pilot notice required</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              Before creating a test family, the parent needs to review the pilot data and privacy notice.
+            </p>
+            <Link className="mt-4 inline-flex rounded-panel bg-ink px-4 py-2 text-sm font-semibold text-white" href="/pilot/consent">
+              Review pilot notice
+            </Link>
+          </section>
+        ) : null}
+
         <form action={createPilotFamily} className="grid gap-4 rounded-panel border border-[var(--line)] bg-white/70 p-5">
           <label className="grid gap-2 text-sm font-semibold">
             Family name
@@ -42,7 +63,7 @@ export default async function NewFamilyPage({ searchParams }: { searchParams: Se
               required
             />
           </label>
-          <button className="rounded-panel bg-ink px-4 py-2 text-sm font-semibold text-white" type="submit">
+          <button className="rounded-panel bg-ink px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" disabled={!consent} type="submit">
             Create family
           </button>
         </form>

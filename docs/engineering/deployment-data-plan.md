@@ -69,8 +69,18 @@ npm run build
 - `AUTH_SECRET` is strong enough.
 - The database accepts a basic query.
 
-## Known Limitation
+## PostgreSQL Schema Path
 
-The repo currently uses one Prisma schema file with `provider = "sqlite"` for local development. Pilot PostgreSQL deployment needs a deliberate provider switch or separate deployment schema before the first real hosted database migration.
+The repo keeps `prisma/schema.prisma` on SQLite for local development and generates a PostgreSQL deployment schema when needed:
 
-Until that switch is made, P2 is considered engineering-ready but not yet connected to a live hosted PostgreSQL instance.
+```bash
+npm run prisma:postgres-schema
+```
+
+This writes `prisma/schema.postgres.prisma` by switching the datasource provider to `postgresql`. Hosted pilot migration commands should use that generated schema:
+
+```bash
+npx prisma migrate deploy --schema prisma/schema.postgres.prisma
+```
+
+The generated PostgreSQL schema must be regenerated after every Prisma schema change and reviewed before the first hosted database migration.
