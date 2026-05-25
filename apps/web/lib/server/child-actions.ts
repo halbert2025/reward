@@ -222,6 +222,7 @@ export async function submitWishReflection(formData: FormData) {
   const taskId = String(formData.get("taskId") ?? "");
   const reflection = String(formData.get("reflection") ?? "").trim();
   const photoLabel = String(formData.get("photoLabel") ?? "").trim();
+  const evidenceNoticeAccepted = String(formData.get("evidenceNoticeAccepted") ?? "") === "on";
   const actor = await getCurrentActor();
 
   if (actor.role !== "child") {
@@ -230,6 +231,10 @@ export async function submitWishReflection(formData: FormData) {
 
   if (!reflection) {
     redirect(`/child/pomodoro/${taskId}/reflect?error=reflection`);
+  }
+
+  if (photoLabel && !evidenceNoticeAccepted) {
+    redirect(`/child/pomodoro/${taskId}/reflect?error=notice`);
   }
 
   const evidenceValidation = validateEvidencePlaceholder(photoLabel);
@@ -296,7 +301,11 @@ export async function submitWishReflection(formData: FormData) {
           eventName: "task_submitted_for_review",
           entityType: "Task",
           entityId: task.id,
-          metadataJson: { hasPhotoPlaceholder: Boolean(photoLabel) },
+          metadataJson: {
+            hasPhotoPlaceholder: Boolean(photoLabel),
+            storageProvider: "mock",
+            evidenceNoticeAccepted,
+          },
         },
         {
           familyId: task.contract.familyId,

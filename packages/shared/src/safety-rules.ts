@@ -35,6 +35,7 @@ const forbiddenEvidencePatterns = [
   /id card|passport|certificate|证件|身份证|护照/i,
   /chat|message screenshot|聊天|截图/i,
   /video|location|gps|视频|定位/i,
+  /https?:\/\/|data:image|base64|\.jpg|\.jpeg|\.png|\.heic|\.webp|file:/i,
 ];
 
 const harmfulRepairPatterns = [
@@ -83,11 +84,21 @@ export function validateRewardInput(input: RewardValidationInput): ValidationRes
 }
 
 export function validateEvidencePlaceholder(photoLabel: string): ValidationResult {
-  if (!photoLabel.trim()) {
+  const label = photoLabel.trim();
+
+  if (!label) {
     return { ok: true };
   }
 
-  if (firstMatchedPattern(photoLabel, forbiddenEvidencePatterns)) {
+  if (label.length > 80) {
+    return {
+      ok: false,
+      code: "EVIDENCE_PLACEHOLDER_TOO_LONG",
+      message: "照片说明保持简短即可，当前测试版不上传真实照片。",
+    };
+  }
+
+  if (firstMatchedPattern(label, forbiddenEvidencePatterns)) {
     return {
       ok: false,
       code: "EVIDENCE_PRIVACY_RISK",

@@ -12,8 +12,10 @@ type SearchParams = Promise<{
 
 const errorCopy: Record<string, string> = {
   reflection: "写一句你刚才做了什么就可以。",
+  notice: "如果填写照片说明，请先确认当前测试版不上传真实照片，并避开敏感信息。",
   EVIDENCE_PRIVACY_RISK:
     "只拍任务成果局部，避开人脸、住址、学校标识、证件、聊天截图和定位信息。",
+  EVIDENCE_PLACEHOLDER_TOO_LONG: "照片说明保持简短即可，当前测试版不上传真实照片。",
 };
 
 export default async function ReflectionPage({
@@ -93,9 +95,14 @@ export default async function ReflectionPage({
           </label>
 
           <p className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-4 text-sm leading-6 text-[var(--muted)]">
-            只需要记录努力。可以跳过照片；如果填写照片说明，请避开人脸、住址、
-            学校标识、证件、聊天截图和定位信息。
+            当前测试版不上传真实照片，只保存一条 mock 照片说明。可以跳过照片；
+            如果填写说明，请避开人脸、住址、学校标识、证件、聊天截图和定位信息。
           </p>
+
+          <label className="flex gap-3 text-sm leading-6">
+            <input className="mt-1 h-4 w-4" name="evidenceNoticeAccepted" type="checkbox" />
+            我知道当前测试版不会上传真实照片；如果填写照片说明，只写任务成果局部，不写人脸、住址、学校或定位信息。
+          </label>
 
           <button
             className="rounded-panel bg-ink px-4 py-2 text-sm font-semibold text-white"

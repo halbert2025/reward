@@ -8,6 +8,7 @@
 - Parent family creation is blocked until current-version guardian consent exists.
 - Data handling requests are captured at `/privacy/requests`.
 - Request handling follows `docs/safety/data-request-runbook.md`.
+- Evidence photo handling follows `docs/safety/evidence-photo-policy.md`; first pilot stores mock descriptions only, not real photo files.
 
 ## 1. 家长能查看什么
 

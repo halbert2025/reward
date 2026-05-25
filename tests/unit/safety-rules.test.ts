@@ -55,6 +55,20 @@ describe("MVP safety and acceptance rules", () => {
     expect(result.ok ? "" : result.code).toBe("EVIDENCE_PRIVACY_RISK");
   });
 
+  it("blocks real photo upload indicators in pilot evidence placeholders", () => {
+    const result = validateEvidencePlaceholder("https://example.com/photo.jpg");
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? "" : result.code).toBe("EVIDENCE_PRIVACY_RISK");
+  });
+
+  it("limits evidence placeholder length", () => {
+    const result = validateEvidencePlaceholder("a".repeat(81));
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? "" : result.code).toBe("EVIDENCE_PLACEHOLDER_TOO_LONG");
+  });
+
   it("keeps repair wording neutral", () => {
     expect(validateNeutralRepairMessage("这个愿望需要一起商量一下").ok).toBe(true);
 
