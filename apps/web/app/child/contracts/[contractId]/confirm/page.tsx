@@ -62,6 +62,11 @@ export default async function ChildConfirmPage({
             This promise changed or is no longer waiting for confirmation.
           </p>
         ) : null}
+        {query.error === "permission" ? (
+          <p className="rounded-panel border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            This promise can only be confirmed from the child role.
+          </p>
+        ) : null}
 
         {isActive ? (
           <section className="rounded-panel border border-[var(--line)] bg-white/70 p-5">

@@ -1,43 +1,64 @@
-import { test, expect } from "@playwright/test";
+import { execFileSync } from "node:child_process";
+import { expect, test } from "@playwright/test";
 
-test.skip(true, "Prompt 15 initializes the app shell; real E2E steps are enabled after feature routes exist.");
+const cwd = process.cwd();
+
+function seedDemoData() {
+  execFileSync("npm.cmd", ["run", "prisma:seed"], {
+    cwd,
+    shell: true,
+    stdio: "pipe",
+  });
+}
+
+async function useRole(page: import("@playwright/test").Page, role: "parent" | "child") {
+  await page.context().addCookies([
+    {
+      name: "reward_mock_role",
+      value: role,
+      domain: "127.0.0.1",
+      path: "/",
+    },
+  ]);
+}
+
+test.beforeEach(async () => {
+  seedDemoData();
+});
 
 test.describe("Reward MVP contract flow", () => {
-  test("normal family creates contract, child confirms, starts, completes, and submits reflection", async ({ page }) => {
-    await page.goto("/");
+  test("child confirms, starts pomodoro, completes, and submits reflection", async ({ page }) => {
+    await useRole(page, "child");
 
-    // TODO: P01 parent starts setup.
-    // TODO: P02 parent confirms five principles.
-    // TODO: P03 parent initializes safe reward pool.
-    // TODO: P04 parent creates first 25-minute contract.
-    // TODO: P05 parent invites child.
-    // TODO: P06 child opens wish backyard.
-    // TODO: child confirms latest ContractVersion.
-    // TODO: P07 child starts and completes pomodoro.
-    // TODO: P08 child submits required reflection.
+    await page.goto("/child/contracts/seed_contract/confirm");
+    await page.getByRole("checkbox").check();
+    await page.getByRole("button", { name: "Confirm and activate" }).click();
+    await expect(page).toHaveURL(/status=active/);
 
-    await expect(page).toHaveURL(/.*/);
+    await page.goto("/child/pomodoro/seed_task");
+    await page.locator("form").first().getByRole("button").click();
+    await expect(page.getByText("Cat backyard timer")).toBeVisible();
+
+    await expect(page.getByRole("button", { name: /完成|completed|鎴/ })).toBeEnabled({
+      timeout: 12_000,
+    });
+    await page.getByRole("button", { name: /完成|completed|鎴/ }).click();
+    await expect(page).toHaveURL(/\/child\/pomodoro\/seed_task\/reflect/);
+
+    await page.getByRole("textbox", { name: "一句复盘" }).fill("我完成了一次安静的 25 分钟练习。");
+    await page.getByRole("button", { name: "提交完成记录" }).click();
+    await expect(page).toHaveURL(/\/child\/backyard\?status=cat-visit/);
   });
 
-  test("parent cannot overwrite confirmed contract version after child confirmation", async ({ page }) => {
-    await page.goto("/");
+  test("unsafe reward or contract input is blocked before preview", async ({ page }) => {
+    await useRole(page, "parent");
 
-    // TODO: Arrange confirmed contract.
-    // TODO: Parent attempts to edit accepted version in place.
-    // TODO: Expect CONTRACT_CONFIRMED_IMMUTABLE or new ContractVersion flow.
-    // TODO: Assert child effort remains visible.
+    await page.goto("/parent/contracts/new");
+    await page.getByLabel("Title").fill("Cash reward");
+    await page.getByLabel("Promise").fill("Finish class ranking task");
+    await page.getByRole("button", { name: "Create preview" }).click();
 
-    await expect(page).toHaveURL(/.*/);
-  });
-
-  test("unsafe reward or contract input is blocked before ContractVersion creation", async ({ page }) => {
-    await page.goto("/");
-
-    // TODO: Try school/class/institution wording.
-    // TODO: Try cash/wallet/merchant wording.
-    // TODO: Try video/location/hard-lock/open-ranking wording.
-    // TODO: Assert no ContractVersion is created.
-
-    await expect(page).toHaveURL(/.*/);
+    await expect(page).toHaveURL(/error=/);
+    await expect(page.getByText(/不放进家庭愿望池|not suitable|不适合/)).toBeVisible();
   });
 });

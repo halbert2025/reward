@@ -1,6 +1,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { canConfirmContract, canEditContractDraft } from "@reward/shared/permissions";
 import { validateRewardInput } from "@reward/shared/safety-rules";
+import { ContractState } from "@reward/shared/state-machine";
+import { getCurrentMockActor } from "./auth/mock-auth";
 import { prisma } from "./prisma";
 
 const forbiddenContractTerms = [
@@ -132,6 +135,11 @@ export async function createOrReviseFirstContract(formData: FormData) {
     "Pomodoro completion plus one reflection sentence.";
   const repairText =
     getCleanText(formData, "repairText") || "The child may restart once.";
+  const actor = await getCurrentMockActor();
+
+  if (actor.role !== "parent" && actor.role !== "co_signer") {
+    redirect("/parent/contracts/new?error=permission");
+  }
 
   const family = familyId
     ? await prisma.family.findUnique({
@@ -160,9 +168,11 @@ export async function createOrReviseFirstContract(formData: FormData) {
   const combined = `${title} ${promiseText} ${taskText} ${evidenceText} ${rewardText}`;
   const rewardValidation = validateRewardInput({
     title,
+    promiseText,
     rewardText,
     taskText,
     evidenceText,
+    repairText,
     screenTimeMinutes: 25,
   });
 
@@ -195,6 +205,21 @@ export async function createOrReviseFirstContract(formData: FormData) {
 
       if (!existing) {
         throw new Error("Contract not found");
+      }
+      const permissionTarget = {
+        id: existing.id,
+        familyId: existing.familyId,
+        childId: existing.childId,
+        createdById: existing.createdById,
+        state: existing.state as ContractState,
+      };
+
+      if (
+        actor.familyId !== existing.familyId ||
+        (!canEditContractDraft(actor, permissionTarget) &&
+          existing.state !== "pending_child_confirm")
+      ) {
+        throw new Error("Permission denied");
       }
 
       const nextVersionNumber = (existing.versions[0]?.versionNumber ?? 0) + 1;
@@ -356,6 +381,7 @@ export async function childConfirmFirstContract(formData: FormData) {
   "use server";
 
   const contractId = getCleanText(formData, "contractId");
+  const actor = await getCurrentMockActor();
   const contract = await prisma.contract.findFirst({
     where: {
       id: contractId,
@@ -377,6 +403,18 @@ export async function childConfirmFirstContract(formData: FormData) {
 
   if (!contract || !version) {
     redirect(`/child/contracts/${contractId}/confirm?error=stale`);
+  }
+
+  if (
+    !canConfirmContract(actor, {
+      id: contract.id,
+      familyId: contract.familyId,
+      childId: contract.childId,
+      createdById: contract.createdById,
+      state: contract.state as ContractState,
+    })
+  ) {
+    redirect(`/child/contracts/${contractId}/confirm?error=permission`);
   }
 
   await prisma.$transaction(async (tx) => {

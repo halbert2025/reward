@@ -1,8 +1,10 @@
 export type RewardValidationInput = {
   title: string;
+  promiseText?: string;
   rewardText: string;
   taskText: string;
   evidenceText: string;
+  repairText?: string;
   screenTimeMinutes?: number;
 };
 
@@ -44,7 +46,14 @@ function firstMatchedPattern(value: string, patterns: RegExp[]) {
 }
 
 export function validateRewardInput(input: RewardValidationInput): ValidationResult {
-  const combined = `${input.title} ${input.rewardText} ${input.taskText} ${input.evidenceText}`;
+  const combined = [
+    input.title,
+    input.promiseText ?? "",
+    input.rewardText,
+    input.taskText,
+    input.evidenceText,
+    input.repairText ?? "",
+  ].join(" ");
 
   if (!input.title.trim() || input.title.trim().length > 40) {
     return {

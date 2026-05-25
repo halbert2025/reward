@@ -17,6 +17,7 @@ const errorCopy: Record<string, string> = {
   REWARD_TITLE_INVALID: "先写一个孩子能看懂、40 字以内的小愿望。",
   SCREEN_TIME_TOO_LONG: "屏幕时间先放轻一点，让愿望更容易兑现。",
   wish: "先选择一个安全、可兑现的小愿望。",
+  permission: "这一步只允许家长或共同签约家长操作。",
 };
 
 export default async function NewContractPage({

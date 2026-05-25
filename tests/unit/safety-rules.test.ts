@@ -9,9 +9,26 @@ describe("MVP safety and acceptance rules", () => {
   it("blocks forbidden reward and school/payment language", () => {
     const result = validateRewardInput({
       title: "Recharge game coins",
+      promiseText: "I will finish class homework",
       rewardText: "Small wish reward: recharge 100 game coins",
-      taskText: "Finish class homework",
+      taskText: "One safe task",
       evidenceText: "One reflection",
+      repairText: "No repair needed",
+      screenTimeMinutes: 25,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? "" : result.code).toBe("REWARD_FORBIDDEN");
+  });
+
+  it("checks promise and repair fields with the same reward safety rules", () => {
+    const result = validateRewardInput({
+      title: "Small wish",
+      promiseText: "Get first place in class ranking",
+      rewardText: "Small wish reward: family craft",
+      taskText: "One safe task",
+      evidenceText: "One reflection",
+      repairText: "No payment wallet",
       screenTimeMinutes: 25,
     });
 

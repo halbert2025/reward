@@ -11,6 +11,7 @@ const errorCopy: Record<string, string> = {
   REPAIR_MESSAGE_REQUIRED: "写一句中性的说明，比如：这个愿望需要一起商量一下。",
   REPAIR_MESSAGE_NOT_NEUTRAL: "这里不做裁判或责备，请换成一起商量的表达。",
   missing: "这个约定刚刚有更新，请刷新后再继续。",
+  permission: "这一步只允许对应家庭的家长回应。",
 };
 
 export default async function ParentResponsePage({

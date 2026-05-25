@@ -1,7 +1,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { ContractState, FulfillmentResponseType, FulfillmentState } from "@prisma/client";
+import { canCreateFulfillment } from "@reward/shared/permissions";
 import { validateNeutralRepairMessage } from "@reward/shared/safety-rules";
+import { ContractState as SharedContractState } from "@reward/shared/state-machine";
+import { getCurrentMockActor } from "./auth/mock-auth";
 import { prisma } from "./prisma";
 
 export async function getPendingParentResponse() {
@@ -72,6 +75,7 @@ export async function submitParentResponse(formData: FormData) {
   const message = clean(formData, "message");
   const delayReason = clean(formData, "delayReason");
   const expectedAt = clean(formData, "expectedAt");
+  const actor = await getCurrentMockActor();
 
   const contract = await prisma.contract.findFirst({
     where: {
@@ -84,6 +88,18 @@ export async function submitParentResponse(formData: FormData) {
 
   if (!contract) {
     redirect("/parent/response?error=missing");
+  }
+
+  if (
+    !canCreateFulfillment(actor, {
+      id: contract.id,
+      familyId: contract.familyId,
+      childId: contract.childId,
+      createdById: contract.createdById,
+      state: contract.state as SharedContractState,
+    })
+  ) {
+    redirect("/parent/response?error=permission");
   }
 
   if (responseType === "delayed" && (!delayReason || !expectedAt)) {
