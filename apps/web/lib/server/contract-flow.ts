@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { validateRewardInput } from "@reward/shared/safety-rules";
 import { prisma } from "./prisma";
 
 const forbiddenContractTerms = [
@@ -157,9 +158,20 @@ export async function createOrReviseFirstContract(formData: FormData) {
 
   const rewardText = wish ? `Small wish reward: ${wish.title}` : "";
   const combined = `${title} ${promiseText} ${taskText} ${evidenceText} ${rewardText}`;
+  const rewardValidation = validateRewardInput({
+    title,
+    rewardText,
+    taskText,
+    evidenceText,
+    screenTimeMinutes: 25,
+  });
 
-  if (!wish || containsForbiddenContractTerm(combined)) {
-    redirect("/parent/contracts/new?error=contract");
+  if (!wish) {
+    redirect("/parent/contracts/new?error=wish");
+  }
+
+  if (containsForbiddenContractTerm(combined) || !rewardValidation.ok) {
+    redirect(`/parent/contracts/new?error=${rewardValidation.ok ? "contract" : rewardValidation.code}`);
   }
 
   const contract = await prisma.$transaction(async (tx) => {

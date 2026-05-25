@@ -9,6 +9,16 @@ type SearchParams = Promise<{
   error?: string;
 }>;
 
+const errorCopy: Record<string, string> = {
+  contract:
+    "这个内容不适合放进家庭契约。请避开学校、商家、支付、监控和惩罚式表达。",
+  REWARD_FORBIDDEN:
+    "这个奖励先不放进家庭愿望池，可以换成一次陪伴、体验或轻量选择权。",
+  REWARD_TITLE_INVALID: "先写一个孩子能看懂、40 字以内的小愿望。",
+  SCREEN_TIME_TOO_LONG: "屏幕时间先放轻一点，让愿望更容易兑现。",
+  wish: "先选择一个安全、可兑现的小愿望。",
+};
+
 export default async function NewContractPage({
   searchParams,
 }: {
@@ -59,10 +69,9 @@ export default async function NewContractPage({
             <input name="contractId" type="hidden" value={params.contractId ?? ""} />
             <input name="familyId" type="hidden" value={family.id} />
 
-            {params.error === "contract" ? (
+            {params.error ? (
               <p className="rounded-panel border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                Choose a safe family wish and keep this first promise away from school,
-                merchants, payments, or institution tasks.
+                {errorCopy[params.error] ?? errorCopy.contract}
               </p>
             ) : null}
 
@@ -128,8 +137,9 @@ export default async function NewContractPage({
             </label>
 
             <div className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-4 text-sm leading-6 text-[var(--muted)]">
-              Fulfillment is expected today or within 24 hours. This first flow does
-              not support large wishes, payment, merchants, or school/institution use.
+              第一个约定只使用轻量小愿望。现金、充值、盲盒、抽卡、高价电子产品、
+              过长屏幕时间、学校排名、商家导购和支付托管都会被拦截。证据只记录努力，
+              不需要人脸、视频或定位。
             </div>
 
             <button

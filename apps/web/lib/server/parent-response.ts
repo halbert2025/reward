@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { ContractState, FulfillmentResponseType, FulfillmentState } from "@prisma/client";
+import { validateNeutralRepairMessage } from "@reward/shared/safety-rules";
 import { prisma } from "./prisma";
 
 export async function getPendingParentResponse() {
@@ -143,6 +144,13 @@ export async function submitParentResponse(formData: FormData) {
     redirect(`/parent/response?contractId=${contractId}&error=response`);
   }
 
+  if (responseType === "pending_repair") {
+    const repairValidation = validateNeutralRepairMessage(message);
+    if (!repairValidation.ok) {
+      redirect(`/parent/response?contractId=${contractId}&error=${repairValidation.code}`);
+    }
+  }
+
   const response = responseType as FulfillmentResponseType;
   const fulfillmentState = response as FulfillmentState;
   const nextContractState = response as ContractState;
@@ -166,7 +174,7 @@ export async function submitParentResponse(formData: FormData) {
           contractId,
           openedById: "seed_parent",
           state: "opened",
-          parentMessage: message || "This wish needs a small family review.",
+          parentMessage: message,
         },
       });
     }

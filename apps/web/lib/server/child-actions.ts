@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { validateEvidencePlaceholder } from "@reward/shared/safety-rules";
 import { prisma } from "./prisma";
 
 export async function startWishPomodoro(formData: FormData) {
@@ -206,6 +207,11 @@ export async function submitWishReflection(formData: FormData) {
 
   if (!reflection) {
     redirect(`/child/pomodoro/${taskId}/reflect?error=reflection`);
+  }
+
+  const evidenceValidation = validateEvidencePlaceholder(photoLabel);
+  if (!evidenceValidation.ok) {
+    redirect(`/child/pomodoro/${taskId}/reflect?error=${evidenceValidation.code}`);
   }
 
   const task = await prisma.task.findFirst({
