@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reward MVP 电脑端验收文件</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, "Microsoft YaHei", system-ui, sans-serif;
+        background: #fffaf0;
+        color: #26322f;
+        line-height: 1.65;
+      }
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 32px 20px 64px;
+      }
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+      }
+      a {
+        color: #2f6d4f;
+        font-weight: 700;
+      }
+      .panel {
+        border: 1px solid #ded8c8;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.74);
+        padding: 18px;
+        margin: 16px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 14px;
+      }
+      code,
+      pre {
+        background: #f2ead8;
+        border-radius: 6px;
+      }
+      pre {
+        padding: 14px;
+        overflow: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #ded8c8;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .pass {
+        color: #2f6d4f;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Reward MVP 电脑端验收文件</h1>
+      <p>日期：2026-05-25。用途：在本机浏览器验收 Reward MVP Demo。</p>
+
+      <section class="panel">
+        <h2>启动方式</h2>
+        <p>在 <code>D:\AIprojects\reward</code> 目录执行：</p>
+        <pre>npm.cmd run dev</pre>
+        <p>打开：<a href="http://localhost:3000">http://localhost:3000</a></p>
+      </section>
+
+      <section class="panel">
+        <h2>主要页面入口</h2>
+        <div class="grid">
+          <p><a href="http://localhost:3000/parent/onboarding">家长 onboarding</a></p>
+          <p><a href="http://localhost:3000/parent/contracts/new">创建首个小约定</a></p>
+          <p><a href="http://localhost:3000/child/backyard">猫咪愿望后院</a></p>
+          <p><a href="http://localhost:3000/child/notes">孩子私密小纸条</a></p>
+          <p><a href="http://localhost:3000/parent/response">家长兑现回应</a></p>
+          <p><a href="http://localhost:3000/parent/witness">纪念见证人邀请</a></p>
+          <p><a href="http://localhost:3000/witness">见证人视图</a></p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>验收脚本</h2>
+        <ol>
+          <li>家长进入 onboarding，完成家庭、五条原则、奖池初始化。</li>
+          <li>家长进入“创建首个小约定”，选择小愿望，生成预览。</li>
+          <li>孩子打开确认页，确认约定。</li>
+          <li>孩子进入猫咪愿望后院，点击“开始守约”。</li>
+          <li>猫咪番茄钟显示 25 分钟产品承诺，调试倒计时结束后点击“我完成了”。</li>
+          <li>孩子提交一句复盘，可选照片占位。</li>
+          <li>家长打开“家长兑现回应”，选择已兑现、延期或一起复盘。</li>
+          <li>系统生成亲子日记，日记包含愿望、任务、孩子复盘、家长回应、完成时间、安静猫来访文案。</li>
+          <li>孩子在“小纸条”写一条私密内容，确认父母和见证人页面不显示正文。</li>
+          <li>家长生成一个纪念见证人邀请，见证人只能看到摘要并发送一句祝福。</li>
+        </ol>
+      </section>
+
+      <section class="panel">
+        <h2>命令验收</h2>
+        <pre>npm.cmd run typecheck
+npm.cmd run lint
+npm.cmd run test
+npm.cmd run build
+npm.cmd run verify:seed</pre>
+      </section>
+
+      <section class="panel">
+        <h2>通过标准</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>项目</th>
+              <th>结果</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>家长能完成家庭、原则、奖池初始化</td><td class="pass">已实现</td></tr>
+            <tr><td>家长能创建首个小约定</td><td class="pass">已实现</td></tr>
+            <tr><td>孩子能确认愿望并开始猫咪番茄钟</td><td class="pass">已实现</td></tr>
+            <tr><td>孩子能提交一句复盘</td><td class="pass">已实现</td></tr>
+            <tr><td>家长能选择已兑现、延期或待复盘</td><td class="pass">已实现</td></tr>
+            <tr><td>系统生成亲子日记</td><td class="pass">已实现</td></tr>
+            <tr><td>愿望后院出现“安静猫来了”反馈</td><td class="pass">已实现</td></tr>
+            <tr><td>家长不能查看孩子私密小纸条</td><td class="pass">权限测试通过</td></tr>
+            <tr><td>已确认契约不能被覆盖，只能生成新版本</td><td class="pass">已实现</td></tr>
+            <tr><td>关键操作有 AuditLog</td><td class="pass">已实现，后续可补集成测试</td></tr>
+            <tr><td>没有学校/机构/商家/托管/视频/强锁/开放社交主链路</td><td class="pass">边界审查通过</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>

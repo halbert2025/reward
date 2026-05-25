@@ -1,0 +1,439 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  parent
+  child
+  co_signer
+  witness
+  system_admin
+}
+
+enum MemberStatus {
+  invited
+  active
+  paused
+  removed
+}
+
+enum MembershipKind {
+  family_member
+  contract_owner
+  contract_child
+  contract_cosigner
+}
+
+enum MembershipStatus {
+  active
+  revoked
+}
+
+enum FamilyTrustState {
+  uninitialized
+  principles_pending
+  active
+  strained
+  restoring
+  stable
+  paused
+}
+
+enum RewardPoolStatus {
+  draft
+  active
+  archived
+}
+
+enum WishCategory {
+  time
+  experience
+  object
+  privilege
+  other
+}
+
+enum SafetyStatus {
+  pending
+  approved
+  blocked
+}
+
+enum ContractState {
+  draft
+  pending_child_confirm
+  confirmed
+  active
+  completed
+  fulfillment_pending
+  fulfilled
+  delayed
+  pending_repair
+  diary_generated
+  archived
+}
+
+enum TaskState {
+  not_started
+  running
+  paused
+  exited
+  submitted
+  accepted_for_review
+}
+
+enum FocusSessionState {
+  not_started
+  running
+  paused
+  completed
+  exited
+}
+
+enum EvidenceVisibility {
+  contract_family
+  parent_child_only
+}
+
+enum FulfillmentState {
+  none
+  pending
+  fulfilled
+  delayed
+  pending_repair
+  closed
+}
+
+enum FulfillmentResponseType {
+  fulfilled
+  delayed
+  pending_repair
+}
+
+enum RepairCaseState {
+  none
+  opened
+  awaiting_parent
+  awaiting_child
+  mutually_resolved
+  closed_without_verdict
+  archived
+}
+
+enum WitnessStatus {
+  invited
+  accepted
+  expired
+  revoked
+}
+
+enum BackyardSignal {
+  none
+  quiet_cat_visit
+}
+
+enum ChildNoteVisibility {
+  child_private
+}
+
+enum NotificationType {
+  child_confirm_needed
+  child_can_start
+  parent_response_needed
+  delayed_notice
+  repair_prompt
+  diary_ready
+}
+
+enum ActorType {
+  parent
+  child
+  witness
+  system
+  admin
+}
+
+model User {
+  id            String         @id @default(cuid())
+  displayName   String
+  mockEmail     String?        @unique
+  roleHint      ActorType?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  familyMembers FamilyMember[]
+  memberships   Membership[]
+  childNotes    ChildNote[]    @relation("ChildNotesByChild")
+  auditLogs     AuditLog[]
+}
+
+model Family {
+  id                    String           @id @default(cuid())
+  name                  String
+  trustState            FamilyTrustState @default(principles_pending)
+  principlesConfirmedAt DateTime?
+  createdById           String
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  archivedAt            DateTime?
+  members               FamilyMember[]
+  memberships           Membership[]
+  rewardPools           RewardPool[]
+  contracts             Contract[]
+  diaryEntries          DiaryEntry[]
+  childNotes            ChildNote[]
+  notifications         Notification[]
+  auditLogs             AuditLog[]
+}
+
+model FamilyMember {
+  id        String       @id @default(cuid())
+  familyId  String
+  userId    String
+  role      Role
+  status    MemberStatus @default(invited)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  deletedAt DateTime?
+  family    Family       @relation(fields: [familyId], references: [id])
+  user      User         @relation(fields: [userId], references: [id])
+
+  @@unique([familyId, userId, role])
+}
+
+model Membership {
+  id         String           @id @default(cuid())
+  familyId   String
+  userId     String
+  contractId String?
+  kind       MembershipKind
+  status     MembershipStatus @default(active)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  deletedAt  DateTime?
+  family     Family           @relation(fields: [familyId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
+  contract   Contract?        @relation(fields: [contractId], references: [id])
+}
+
+model RewardPool {
+  id          String           @id @default(cuid())
+  familyId    String
+  createdById String
+  title       String
+  status      RewardPoolStatus @default(draft)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  archivedAt  DateTime?
+  family      Family           @relation(fields: [familyId], references: [id])
+  wishes      Wish[]
+}
+
+model Wish {
+  id           String       @id @default(cuid())
+  rewardPoolId String
+  title        String
+  description  String?
+  category     WishCategory @default(other)
+  safetyStatus SafetyStatus @default(pending)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  archivedAt   DateTime?
+  rewardPool   RewardPool   @relation(fields: [rewardPoolId], references: [id])
+  contracts    Contract[]
+}
+
+model Contract {
+  id                   String            @id @default(cuid())
+  familyId             String
+  wishId               String?
+  createdById          String
+  childId              String
+  state                ContractState     @default(draft)
+  acceptedVersionId    String?           @unique
+  currentVersionNumber Int               @default(0)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  archivedAt           DateTime?
+  family               Family            @relation(fields: [familyId], references: [id])
+  wish                 Wish?             @relation(fields: [wishId], references: [id])
+  acceptedVersion      ContractVersion?  @relation("AcceptedContractVersion", fields: [acceptedVersionId], references: [id])
+  versions             ContractVersion[] @relation("ContractVersions")
+  tasks                Task[]
+  fulfillments         Fulfillment[]
+  repairCases          RepairCase[]
+  witnesses            Witness[]
+  diaryEntries         DiaryEntry[]
+  memberships          Membership[]
+  childNotes           ChildNote[]
+}
+
+model ContractVersion {
+  id              String    @id @default(cuid())
+  contractId      String
+  versionNumber   Int
+  title           String
+  promiseText     String
+  rewardText      String
+  taskText        String
+  durationMinutes Int       @default(25)
+  createdById     String
+  createdAt       DateTime  @default(now())
+  confirmedAt     DateTime?
+  contract        Contract  @relation("ContractVersions", fields: [contractId], references: [id])
+  acceptedBy      Contract? @relation("AcceptedContractVersion")
+
+  @@unique([contractId, versionNumber])
+}
+
+model Task {
+  id                     String         @id @default(cuid())
+  contractId             String
+  assignedChildId        String
+  state                  TaskState      @default(not_started)
+  title                  String
+  plannedDurationMinutes Int            @default(25)
+  startedAt              DateTime?
+  completedAt            DateTime?
+  exitedAt               DateTime?
+  exitReason             String?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  archivedAt             DateTime?
+  contract               Contract       @relation(fields: [contractId], references: [id])
+  focusSessions          FocusSession[]
+  evidence               Evidence[]
+}
+
+model FocusSession {
+  id              String            @id @default(cuid())
+  taskId          String
+  childId         String
+  state           FocusSessionState @default(not_started)
+  startedAt       DateTime?
+  pausedAt        DateTime?
+  endedAt         DateTime?
+  durationSeconds Int               @default(0)
+  exitReason      String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  task            Task              @relation(fields: [taskId], references: [id])
+}
+
+model Evidence {
+  id             String             @id @default(cuid())
+  taskId         String
+  authorId       String
+  reflectionText String
+  photoUrl       String?
+  visibility     EvidenceVisibility @default(contract_family)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  archivedAt     DateTime?
+  task           Task               @relation(fields: [taskId], references: [id])
+}
+
+model Fulfillment {
+  id            String                  @id @default(cuid())
+  contractId    String
+  respondedById String
+  state         FulfillmentState        @default(pending)
+  responseType  FulfillmentResponseType
+  message       String?
+  expectedAt    DateTime?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  closedAt      DateTime?
+  contract      Contract                @relation(fields: [contractId], references: [id])
+}
+
+model RepairCase {
+  id                String          @id @default(cuid())
+  contractId        String
+  openedById        String
+  state             RepairCaseState @default(opened)
+  parentMessage     String?
+  childResponse     String?
+  resolutionSummary String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  archivedAt        DateTime?
+  contract          Contract        @relation(fields: [contractId], references: [id])
+}
+
+model Witness {
+  id              String        @id @default(cuid())
+  contractId      String
+  invitedById     String
+  displayName     String
+  inviteTokenHash String
+  status          WitnessStatus @default(invited)
+  blessingMessage String?
+  createdAt       DateTime      @default(now())
+  acceptedAt      DateTime?
+  revokedAt       DateTime?
+  contract        Contract      @relation(fields: [contractId], references: [id])
+}
+
+model DiaryEntry {
+  id                     String         @id @default(cuid())
+  familyId               String
+  contractId             String
+  title                  String
+  summary                String
+  parentMessage          String?
+  childReflectionExcerpt String?
+  backyardSignal         BackyardSignal @default(none)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  archivedAt             DateTime?
+  family                 Family         @relation(fields: [familyId], references: [id])
+  contract               Contract       @relation(fields: [contractId], references: [id])
+}
+
+model ChildNote {
+  id         String              @id @default(cuid())
+  familyId   String
+  childId    String
+  contractId String?
+  body       String
+  visibility ChildNoteVisibility @default(child_private)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  archivedAt DateTime?
+  family     Family              @relation(fields: [familyId], references: [id])
+  child      User                @relation("ChildNotesByChild", fields: [childId], references: [id])
+  contract   Contract?           @relation(fields: [contractId], references: [id])
+}
+
+model Notification {
+  id              String           @id @default(cuid())
+  familyId        String
+  recipientUserId String
+  type            NotificationType
+  title           String
+  body            String
+  readAt          DateTime?
+  createdAt       DateTime         @default(now())
+  expiresAt       DateTime?
+  family          Family           @relation(fields: [familyId], references: [id])
+}
+
+model AuditLog {
+  id           String    @id @default(cuid())
+  familyId     String
+  actorUserId  String?
+  actorType    ActorType
+  eventName    String
+  entityType   String
+  entityId     String
+  metadataJson Json?
+  createdAt    DateTime  @default(now())
+  family       Family    @relation(fields: [familyId], references: [id])
+  actor        User?     @relation(fields: [actorUserId], references: [id])
+}

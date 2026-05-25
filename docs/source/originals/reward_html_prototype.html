@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reward 家庭愿望契约系统｜HTML 原型</title>
+<style>
+  :root{
+    --bg:#fbf7ef;
+    --paper:#fffdf8;
+    --ink:#27313a;
+    --muted:#7b736a;
+    --soft:#efe6d7;
+    --line:#e4d9ca;
+    --green:#5f8f78;
+    --green2:#dcebe2;
+    --gold:#e0a73f;
+    --orange:#ed8d5a;
+    --rose:#e899a7;
+    --blue:#6c91b8;
+    --violet:#9075b8;
+    --shadow:0 18px 60px rgba(88,58,25,.12);
+    --radius:26px;
+    --max:1180px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:
+    radial-gradient(circle at 8% 8%,rgba(224,167,63,.18),transparent 28%),
+    radial-gradient(circle at 86% 14%,rgba(95,143,120,.18),transparent 25%),
+    linear-gradient(180deg,#fcf8f0 0%,#f9f0e4 55%,#f4ebde 100%);
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.65}
+  a{color:inherit;text-decoration:none}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(251,247,239,.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(228,217,202,.75)}
+  .nav{max-width:var(--max);margin:auto;display:flex;align-items:center;gap:18px;padding:12px 22px;overflow:auto;white-space:nowrap}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;margin-right:18px;color:#2f3b35}
+  .logo{width:38px;height:38px;border-radius:14px;background:linear-gradient(135deg,#5f8f78,#e0a73f);display:grid;place-items:center;color:white;box-shadow:0 10px 28px rgba(95,143,120,.28)}
+  .nav a{font-size:13px;color:#6f675f;padding:8px 12px;border-radius:999px}
+  .nav a:hover,.nav a.active{background:#fff;color:#27313a;box-shadow:0 4px 16px rgba(88,58,25,.08)}
+  .hero{max-width:var(--max);margin:auto;padding:74px 22px 48px;display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#fff6e3;border:1px solid #efd8ac;color:#8b5d1b;font-weight:800;font-size:13px}
+  h1{margin:20px 0 18px;font-size:clamp(42px,6.8vw,82px);letter-spacing:-.055em;line-height:.98;color:#25362f}
+  .subtitle{font-size:20px;color:#655b51;max-width:760px;margin:0 0 24px}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0}
+  .btn{border:0;border-radius:999px;padding:13px 18px;font-weight:900;cursor:pointer;display:inline-flex;gap:8px;align-items:center;background:#25362f;color:#fff;box-shadow:0 14px 34px rgba(37,54,47,.2)}
+  .btn.secondary{background:white;color:#25362f;border:1px solid var(--line);box-shadow:none}
+  .hero-note{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:30px}
+  .note-card{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 12px 34px rgba(88,58,25,.06)}
+  .note-card b{display:block;color:#25362f;margin-bottom:5px}
+  .note-card span{font-size:13px;color:var(--muted)}
+  .phone-stage{display:grid;grid-template-columns:1fr;justify-items:center}
+  .phone{width:min(360px,92vw);height:720px;border-radius:44px;background:#1f2628;padding:14px;box-shadow:0 30px 90px rgba(39,49,58,.28);position:relative}
+  .phone:before{content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);width:106px;height:24px;border-radius:999px;background:#1f2628;z-index:4}
+  .screen{height:100%;border-radius:34px;background:#fffdf8;overflow:hidden;position:relative;border:1px solid #111}
+  .screen-head{background:linear-gradient(135deg,#e8f3ea,#fff5df);padding:28px 22px 18px;border-bottom:1px solid var(--line)}
+  .screen-head small{font-weight:900;color:#66856e}.screen-head h3{font-size:24px;margin:5px 0 6px;line-height:1.2}.screen-head p{font-size:13px;margin:0;color:#7b736a}
+  .screen-body{padding:18px;display:grid;gap:12px}
+  .mini-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(88,58,25,.06)}
+  .progress{height:10px;background:#eee2d3;border-radius:999px;overflow:hidden;margin:10px 0}.bar{height:100%;background:linear-gradient(90deg,#5f8f78,#e0a73f);border-radius:999px}
+  .cat-yard{height:170px;border-radius:24px;background:linear-gradient(180deg,#dff0e4,#fff2d5);position:relative;overflow:hidden;border:1px solid #d6e3d8}
+  .cat-yard:before{content:"";position:absolute;left:-20px;right:-20px;bottom:-38px;height:92px;background:#93bd82;border-radius:50% 50% 0 0}.cat{position:absolute;bottom:36px;left:132px;width:74px;height:54px;border-radius:50% 50% 42% 42%;background:#fff;box-shadow:inset -8px -4px 0 #eee}.cat:before,.cat:after{content:"";position:absolute;top:-12px;width:22px;height:24px;background:#fff;clip-path:polygon(50% 0,0 100%,100% 100%)}.cat:before{left:10px}.cat:after{right:10px}.cat i{position:absolute;top:20px;left:24px;width:6px;height:6px;border-radius:50%;background:#27313a;box-shadow:22px 0 #27313a}
+  main{max-width:var(--max);margin:auto;padding:30px 22px 90px}.section{padding:42px 0;border-top:1px solid rgba(228,217,202,.7)}
+  .section-head{display:grid;grid-template-columns:.8fr 1.2fr;gap:26px;margin-bottom:22px;align-items:end}.eyebrow{color:#9a6a20;font-weight:900;font-size:13px;letter-spacing:.06em;text-transform:uppercase}.section h2{font-size:clamp(30px,4vw,52px);letter-spacing:-.045em;line-height:1.05;margin:7px 0 0;color:#25362f}.lead{font-size:18px;color:#6f675f;margin:0}
+  .grid{display:grid;gap:16px}.two{grid-template-columns:repeat(2,1fr)}.three{grid-template-columns:repeat(3,1fr)}.four{grid-template-columns:repeat(4,1fr)}
+  .card{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+  .card.flat{box-shadow:none;background:rgba(255,255,255,.45)}.card h3{margin:0 0 8px;font-size:20px;color:#25362f}.card p,.card li{color:#6f675f;font-size:14px}.card ul{padding-left:18px;margin:8px 0 0}.kpi{font-size:38px;font-weight:900;letter-spacing:-.04em;color:#25362f}.tagrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.tag{border:1px solid var(--line);background:white;border-radius:999px;padding:6px 10px;font-size:12px;color:#6f675f}.tag.good{background:#e6f3e7;color:#436b51;border-color:#cce4d2}.tag.warn{background:#fff2d5;color:#8b5d1b;border-color:#f1d59d}.tag.no{background:#fde9e6;color:#9c3b2d;border-color:#f4c9c1}
+  .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.step{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;min-height:144px;position:relative}.num{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:12px;background:#25362f;color:#fff;font-weight:900;margin-bottom:14px}.step b{display:block;line-height:1.3;margin-bottom:6px}.step span{font-size:13px;color:#7b736a}
+  .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.tab{border:1px solid var(--line);background:white;border-radius:999px;padding:10px 14px;cursor:pointer;font-weight:900;color:#6f675f}.tab.active{background:#25362f;color:#fff;border-color:#25362f}.tab-panel{display:none}.tab-panel.active{display:block}
+  .app-grid{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}.mock{background:#fff;border:1px solid var(--line);border-radius:28px;overflow:hidden;box-shadow:var(--shadow)}.mock-top{padding:20px;background:linear-gradient(135deg,#e9f3ed,#fff4dd)}.mock-top small{font-weight:900;color:#66856e}.mock-top h3{margin:5px 0 0}.mock-body{padding:16px;display:grid;gap:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.chip{padding:6px 10px;border-radius:999px;background:#f5ead9;color:#876023;font-weight:800;font-size:12px}.item{border:1px solid var(--line);border-radius:18px;background:#fffdf8;padding:14px}.item b{display:block;color:#25362f}.item span{display:block;color:#7b736a;font-size:13px;margin-top:3px}.timeline{display:grid;gap:12px}.timeitem{display:grid;grid-template-columns:140px 1fr;gap:16px;background:rgba(255,255,255,.68);border:1px solid var(--line);border-radius:20px;padding:16px}.timeitem time{font-weight:900;color:#9a6a20}.table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:white}.table th,.table td{padding:14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:14px}.table th{background:#fff5df;color:#8b5d1b}.table tr:last-child td{border-bottom:0}
+  .wireframes{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.wire{min-height:210px;background:#fff;border:1px solid var(--line);border-radius:24px;padding:12px;display:flex;flex-direction:column;gap:8px}.wire .top{height:36px;border-radius:14px;background:#e8f3ea}.wire .line{height:12px;border-radius:999px;background:#eee2d3}.wire .block{flex:1;border-radius:16px;background:#fff4dd;border:1px dashed #e0c08a}.wire b{font-size:13px;color:#25362f}.footer{padding:40px 22px;border-top:1px solid var(--line);text-align:center;color:#7b736a;background:rgba(255,255,255,.35)}
+  @media (max-width:980px){.hero,.section-head,.app-grid{grid-template-columns:1fr}.hero-note,.three,.four{grid-template-columns:1fr 1fr}.flow{grid-template-columns:repeat(2,1fr)}.wireframes{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:620px){.hero{padding-top:44px}.hero-note,.two,.three,.four,.flow,.wireframes{grid-template-columns:1fr}.phone{height:650px}.section{padding:34px 0}.timeitem{grid-template-columns:1fr}.nav{padding-inline:12px}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="nav">
+  <div class="brand"><span class="logo">R</span><span>Reward 原型</span></div>
+  <a href="#position">定位</a><a href="#flow">闭环</a><a href="#apps">端设计</a><a href="#mvp">MVP</a><a href="#rules">边界</a><a href="#roadmap">路线图</a><a href="#check">评审清单</a>
+</div></div>
+<header class="hero">
+  <div>
+    <span class="pill">家庭契约教练 · 温柔史官 · 愿望后院</span>
+    <h1>把随口承诺，变成孩子相信的家庭约定。</h1>
+    <p class="subtitle">Reward 帮家长说清目标和奖励，帮孩子记录努力过程，到点提醒兑现，让家庭少催促、少扯皮、少反悔。</p>
+    <div class="hero-actions"><a class="btn" href="#apps">查看核心原型</a><a class="btn secondary" href="#mvp">看 MVP 范围</a></div>
+    <div class="hero-note">
+      <div class="note-card"><b>不是控制软件</b><span>不默认强锁，不视频监督，不做实时监控。</span></div>
+      <div class="note-card"><b>不是家庭法官</b><span>记录事实，帮助修复，不替任何一方裁判。</span></div>
+      <div class="note-card"><b>不是奖励商城</b><span>只做订阅，不做商家导购和支付托管。</span></div>
+    </div>
+  </div>
+  <div class="phone-stage">
+    <div class="phone"><div class="screen">
+      <div class="screen-head"><small>孩子端 · 愿望后院</small><h3>周末科技馆</h3><p>还差 2 个专注时段，安静猫已经来过 3 次。</p></div>
+      <div class="screen-body">
+        <div class="cat-yard"><div class="cat"><i></i></div></div>
+        <div class="mini-card"><b>今日守约</b><div class="progress"><div class="bar" style="width:68%"></div></div><small>25 分钟愿望番茄钟 · 已完成 17 分钟</small></div>
+        <div class="mini-card"><b>完成后会发生</b><p style="font-size:13px;margin:8px 0 0;color:#7b736a">愿望能量 +1，妈妈收到兑现提醒，小院会亮一点。</p></div>
+        <button class="btn" style="justify-content:center">开始守约</button>
+      </div>
+    </div></div>
+  </div>
+</header>
+<main>
+<section id="position" class="section">
+  <div class="section-head"><div><div class="eyebrow">01 / POSITION</div><h2>产品到底服务谁？</h2></div><p class="lead">对外帮家长减少反复拉扯，对内保护孩子努力；真正修复的是家庭承诺系统。</p></div>
+  <div class="grid three">
+    <div class="card"><div class="kpi">家长</div><h3>付费对象</h3><p>买到的不是“审判自己”，而是少催促、少争吵、奖励不乱给、孩子更主动。</p></div>
+    <div class="card"><div class="kpi">孩子</div><h3>情感对象</h3><p>获得愿望被认真对待、规则不被随便修改、努力不会被否认的确定感。</p></div>
+    <div class="card"><div class="kpi">家庭</div><h3>价值对象</h3><p>最终不是让某一方赢，而是让家庭规则更稳定，承诺系统更可信。</p></div>
+  </div>
+</section>
+<section id="flow" class="section">
+  <div class="section-head"><div><div class="eyebrow">02 / CORE LOOP</div><h2>首个小约定闭环</h2></div><p class="lead">MVP 只验证一个核心闭环：创建约定、孩子守约、家长回应、生成记忆。</p></div>
+  <div class="flow">
+    <div class="step"><span class="num">1</span><b>家长建家庭</b><span>确认 5 条原则，完成奖池初始化。</span></div>
+    <div class="step"><span class="num">2</span><b>孩子选愿望</b><span>从家庭小愿望池里选，不自由开价。</span></div>
+    <div class="step"><span class="num">3</span><b>生成契约</b><span>目标、奖励、证据、兑现时间全部写清。</span></div>
+    <div class="step"><span class="num">4</span><b>开始守约</b><span>25 分钟愿望番茄钟 + 一句话复盘。</span></div>
+    <div class="step"><span class="num">5</span><b>家长回应</b><span>已兑现、延期或约定复盘，不能无声关闭。</span></div>
+    <div class="step"><span class="num">6</span><b>进入记忆</b><span>生成亲子日记，愿望后院出现猫猫。</span></div>
+  </div>
+</section>
+<section id="apps" class="section">
+  <div class="section-head"><div><div class="eyebrow">03 / APP PROTOTYPE</div><h2>四个核心端体验</h2></div><p class="lead">用四组原型屏呈现产品的整体规划：家长端、孩子端、见证人、约定修复。</p></div>
+  <div class="tabs"><button class="tab active" data-tab="parent">家长端</button><button class="tab" data-tab="child">孩子端</button><button class="tab" data-tab="witness">见证人端</button><button class="tab" data-tab="repair">约定修复</button></div>
+  <div id="parent" class="tab-panel active"><div class="app-grid">
+    <div class="mock"><div class="mock-top"><small>家长端首页</small><h3>今天不用催 3 次</h3></div><div class="mock-body">
+      <div class="item"><b>周末科技馆</b><span>孩子已完成 3/5 个专注时段</span><div class="progress"><div class="bar" style="width:60%"></div></div></div>
+      <div class="item"><b>待回应</b><span>“整理书桌”已完成，建议今晚兑现小奖励。</span></div>
+      <div class="item"><b>奖池健康度</b><span>小愿望偏物质，建议增加陪伴/自主权奖励。</span></div>
+    </div></div>
+    <div class="grid two">
+      <div class="card flat"><h3>家长真正买到什么</h3><ul><li>目标和奖励不再拍脑袋。</li><li>少催促，孩子主动开始守约。</li><li>完成后系统提醒兑现，减少反悔和遗忘。</li><li>通过奖池避免奖励通胀。</li></ul></div>
+      <div class="card flat"><h3>关键页面</h3><ul><li>家庭契约原则确认。</li><li>小/中/大/梦想奖池初始化。</li><li>创建约定：目标、奖励、证据、兑现时间。</li><li>兑现提醒与亲子留言。</li></ul></div>
+    </div>
+  </div></div>
+  <div id="child" class="tab-panel"><div class="app-grid">
+    <div class="mock"><div class="mock-top"><small>孩子端 · 愿望后院</small><h3>不是任务表，是我的小院</h3></div><div class="mock-body"><div class="cat-yard"><div class="cat"><i></i></div></div><div class="item"><b>愿望：周末科技馆</b><span>再完成 2 个专注，愿望树会开花。</span></div><div class="item"><b>今天的安静猫</b><span>它喜欢认真开始的人。</span></div><button class="btn" style="justify-content:center">开始 25 分钟守约</button></div></div>
+    <div class="grid two"><div class="card flat"><h3>孩子为什么愿意用</h3><ul><li>愿望被认真记录。</li><li>努力会改变自己的愿望后院。</li><li>猫猫、徽章、纪念册不是抽卡，而是努力痕迹。</li><li>树洞默认属于自己。</li></ul></div><div class="card flat"><h3>防沉迷原则</h3><ul><li>不排行榜、不连续登录惩罚。</li><li>不无限刷新、不抽卡。</li><li>每日互动有限，完成后提示离开。</li><li>分享只展示努力世界，不展示奖励金额。</li></ul></div></div>
+  </div></div>
+  <div id="witness" class="tab-panel"><div class="app-grid">
+    <div class="mock"><div class="mock-top"><small>见证人 H5</small><h3>只见证，不判案</h3></div><div class="mock-body"><div class="item"><b>你被邀请见证</b><span>小安正在为“周末科技馆”努力。</span></div><div class="item"><b>权限：纪念见证人</b><span>可看完成纪念，不看金额、证据、争议、树洞。</span></div><button class="btn secondary" style="justify-content:center">送一句祝福</button></div></div>
+    <div class="grid two"><div class="card flat"><h3>见证人分级</h3><ul><li>纪念见证人：看成功和纪念。</li><li>提醒见证人：温和提醒回应。</li><li>协商见证人：双方授权后进入。</li><li>裁定见证人：默认关闭。</li></ul></div><div class="card flat"><h3>为什么要弱权限</h3><p>见证人是承诺稳定器，不是家庭法官。权限过重会把亲属变成审判团。</p></div></div>
+  </div></div>
+  <div id="repair" class="tab-panel"><div class="app-grid">
+    <div class="mock"><div class="mock-top"><small>约定修复中心</small><h3>这个愿望需要商量一下</h3></div><div class="mock-body"><div class="item"><b>原始规则</b><span>完成 5 次专注，周六去科技馆。</span></div><div class="item"><b>当前分歧</b><span>已完成 4 次，孩子希望部分折算。</span></div><div class="item"><b>AI 建议</b><span>可折算为 4 个小愿望点，或补做 1 次后兑现。</span></div></div></div>
+    <div class="grid two"><div class="card flat"><h3>产品不做裁判</h3><ul><li>展示原始契约。</li><li>整理双方理由。</li><li>识别事后加码。</li><li>提供延期、补证、补做、折算、封存。</li></ul></div><div class="card flat"><h3>争议不等于努力归零</h3><p>已完成部分可以先确认，争议部分进入协商。孩子也可以放弃奖励，但保留努力记录。</p></div></div>
+  </div></div>
+</section>
+<section id="mvp" class="section">
+  <div class="section-head"><div><div class="eyebrow">04 / MVP</div><h2>MVP 十个页面</h2></div><p class="lead">第一版只做轻闭环，不把 V1/V2 的重功能塞进来。</p></div>
+  <div class="wireframes">
+    <div class="wire"><b>1 家长欢迎</b><div class="top"></div><div class="line"></div><div class="line"></div><div class="block"></div></div>
+    <div class="wire"><b>2 原则确认</b><div class="top"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="block"></div></div>
+    <div class="wire"><b>3 奖池初始化</b><div class="top"></div><div class="block"></div><div class="line"></div></div>
+    <div class="wire"><b>4 创建小约定</b><div class="top"></div><div class="line"></div><div class="block"></div></div>
+    <div class="wire"><b>5 邀请孩子</b><div class="top"></div><div class="block"></div><div class="line"></div></div>
+    <div class="wire"><b>6 愿望后院</b><div class="top"></div><div class="block"></div><div class="line"></div></div>
+    <div class="wire"><b>7 愿望番茄钟</b><div class="top"></div><div class="block"></div><div class="line"></div></div>
+    <div class="wire"><b>8 完成提交</b><div class="top"></div><div class="line"></div><div class="block"></div></div>
+    <div class="wire"><b>9 兑现提醒</b><div class="top"></div><div class="line"></div><div class="line"></div><div class="block"></div></div>
+    <div class="wire"><b>10 亲子日记</b><div class="top"></div><div class="block"></div><div class="line"></div></div>
+  </div>
+</section>
+<section id="rules" class="section">
+  <div class="section-head"><div><div class="eyebrow">05 / BOUNDARY</div><h2>必须写进产品底层的边界</h2></div><p class="lead">这些边界决定产品是不是可信，而不是可有可无的“合规补丁”。</p></div>
+  <table class="table"><thead><tr><th>不做</th><th>原因</th><th>替代方案</th></tr></thead><tbody>
+    <tr><td>学校 / 机构路径</td><td>会变成管理、排名、续费和获客工具。</td><td>长期只做家庭端。</td></tr>
+    <tr><td>视频监督 / 默认强锁</td><td>控制感强，孩子会把产品视为敌人。</td><td>孩子主动开始守约，轻证据记录。</td></tr>
+    <tr><td>支付托管 / 奖励钱包</td><td>资金池、退款、未成年人支付风险高。</td><td>只做订阅、承诺记录、兑现提醒。</td></tr>
+    <tr><td>商家导购 / 商品抽佣</td><td>会破坏家长对推荐动机的信任。</td><td>只从家庭用户侧订阅收费。</td></tr>
+    <tr><td>抽卡式惊喜</td><td>容易变成盲盒刺激。</td><td>愿望星星、进度式惊喜、三选一。</td></tr>
+    <tr><td>同校/班级数据池</td><td>重识别和攀比风险高。</td><td>家长端大样本低攀比灵感库。</td></tr>
+  </tbody></table>
+</section>
+<section id="roadmap" class="section">
+  <div class="section-head"><div><div class="eyebrow">06 / ROADMAP</div><h2>版本路线图</h2></div><p class="lead">先跑通信任闭环，再扩展愿望世界和长期成长档案。</p></div>
+  <div class="timeline">
+    <div class="timeitem"><time>MVP</time><div><b>跑通首个小约定</b><p>原则确认、奖池初始化、愿望番茄钟、轻证据、兑现提醒、亲子日记、1 个免费纪念见证人。</p></div></div>
+    <div class="timeitem"><time>V1</time><div><b>成为家庭日常契约系统</b><p>目标-奖励匹配、任务分类、能力归档、约定修复、见证人 H5、时光邮局、愿望后院 1.0、会员体系。</p></div></div>
+    <div class="timeitem"><time>V2</time><div><b>形成传播和数据壁垒</b><p>个性化家庭汇率模型、匿名低攀比灵感库、小院名片、手表接入、自愿专注护盾、年度报告。</p></div></div>
+  </div>
+</section>
+<section id="check" class="section">
+  <div class="section-head"><div><div class="eyebrow">07 / REVIEW</div><h2>你看原型时重点判断</h2></div><p class="lead">这份原型不是最终 UI，而是用来验证整体方向是否符合我们讨论的产品灵魂。</p></div>
+  <div class="grid two"><div class="card"><h3>需要确认</h3><ul><li>家长端是否足够像“帮我省心”，而不是“审判我”。</li><li>孩子端是否足够像“我的愿望世界”，而不是“爸妈的任务表”。</li><li>MVP 是否够轻，但没有丢掉契约、履约、记忆三件事。</li><li>见证人和修复中心是否足够温和。</li></ul></div><div class="card"><h3>暂时不确认</h3><ul><li>猫猫美术风格不是最终稿，只代表轻治愈方向。</li><li>页面布局不是最终交互，仅用于看信息架构。</li><li>奖池算法和 AI 规则还需要单独做产品原型。</li><li>品牌名 Reward 可继续调整。</li></ul></div></div>
+</section>
+</main>
+<footer class="footer">Reward HTML Prototype · 家庭契约教练 + 温柔史官 + 愿望后院</footer>
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+  }));
+  const links=[...document.querySelectorAll('.nav a')];
+  const sections=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  window.addEventListener('scroll',()=>{
+    let idx=0; sections.forEach((s,i)=>{ if(s.getBoundingClientRect().top<110) idx=i; });
+    links.forEach(a=>a.classList.remove('active')); if(links[idx]) links[idx].classList.add('active');
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "reward",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace apps/web run dev",
+    "build": "npm --workspace apps/web run build",
+    "lint": "npm --workspace apps/web run lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "prisma:format": "prisma format --schema prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
+    "prisma:seed": "prisma db seed --schema prisma/schema.prisma",
+    "verify:seed": "node scripts/verify-seed.mjs"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^22.10.2",
+    "prisma": "^6.19.3",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
