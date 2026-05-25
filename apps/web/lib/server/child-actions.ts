@@ -3,14 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { validateEvidencePlaceholder } from "@reward/shared/safety-rules";
+import { getCurrentActor } from "./auth/session-auth";
 import { prisma } from "./prisma";
 
 export async function startWishPomodoro(formData: FormData) {
   const taskId = String(formData.get("taskId") ?? "");
+  const actor = await getCurrentActor();
+
+  if (actor.role !== "child") {
+    redirect("/child/backyard?error=permission");
+  }
+
   const task = await prisma.task.findFirst({
     where: {
       id: taskId,
-      assignedChildId: "seed_child",
+      assignedChildId: actor.id,
       contract: {
         state: "active",
       },
@@ -36,7 +43,7 @@ export async function startWishPomodoro(formData: FormData) {
     await tx.focusSession.create({
       data: {
         taskId: task.id,
-        childId: "seed_child",
+        childId: actor.id,
         state: "running",
         startedAt: new Date(),
       },
@@ -45,7 +52,7 @@ export async function startWishPomodoro(formData: FormData) {
     await tx.auditLog.create({
       data: {
         familyId: task.contract.familyId,
-        actorUserId: "seed_child",
+        actorUserId: actor.id,
         actorType: "child",
         eventName: "task_started",
         entityType: "Task",
@@ -62,6 +69,11 @@ export async function startWishPomodoro(formData: FormData) {
 export async function exitWishPomodoro(formData: FormData) {
   const taskId = String(formData.get("taskId") ?? "");
   const reason = String(formData.get("exitReason") ?? "").trim();
+  const actor = await getCurrentActor();
+
+  if (actor.role !== "child") {
+    redirect("/child/backyard?error=permission");
+  }
 
   if (!reason) {
     redirect(`/child/pomodoro/${taskId}?error=exit-reason`);
@@ -70,7 +82,7 @@ export async function exitWishPomodoro(formData: FormData) {
   const task = await prisma.task.findFirst({
     where: {
       id: taskId,
-      assignedChildId: "seed_child",
+      assignedChildId: actor.id,
       state: {
         in: ["running", "paused"],
       },
@@ -115,7 +127,7 @@ export async function exitWishPomodoro(formData: FormData) {
     await tx.notification.create({
       data: {
         familyId: task.contract.familyId,
-        recipientUserId: "seed_parent",
+        recipientUserId: task.contract.createdById,
         type: "repair_prompt",
         title: "The child paused this promise",
         body: "The effort record was saved with a short reason.",
@@ -125,7 +137,7 @@ export async function exitWishPomodoro(formData: FormData) {
     await tx.auditLog.create({
       data: {
         familyId: task.contract.familyId,
-        actorUserId: "seed_child",
+        actorUserId: actor.id,
         actorType: "child",
         eventName: "task_exited",
         entityType: "Task",
@@ -141,10 +153,16 @@ export async function exitWishPomodoro(formData: FormData) {
 
 export async function completeWishPomodoro(formData: FormData) {
   const taskId = String(formData.get("taskId") ?? "");
+  const actor = await getCurrentActor();
+
+  if (actor.role !== "child") {
+    redirect("/child/backyard?error=permission");
+  }
+
   const task = await prisma.task.findFirst({
     where: {
       id: taskId,
-      assignedChildId: "seed_child",
+      assignedChildId: actor.id,
       state: "running",
     },
     include: {
@@ -186,7 +204,7 @@ export async function completeWishPomodoro(formData: FormData) {
     await tx.auditLog.create({
       data: {
         familyId: task.contract.familyId,
-        actorUserId: "seed_child",
+        actorUserId: actor.id,
         actorType: "child",
         eventName: "task_completed",
         entityType: "Task",
@@ -204,6 +222,11 @@ export async function submitWishReflection(formData: FormData) {
   const taskId = String(formData.get("taskId") ?? "");
   const reflection = String(formData.get("reflection") ?? "").trim();
   const photoLabel = String(formData.get("photoLabel") ?? "").trim();
+  const actor = await getCurrentActor();
+
+  if (actor.role !== "child") {
+    redirect("/child/backyard?error=permission");
+  }
 
   if (!reflection) {
     redirect(`/child/pomodoro/${taskId}/reflect?error=reflection`);
@@ -217,7 +240,7 @@ export async function submitWishReflection(formData: FormData) {
   const task = await prisma.task.findFirst({
     where: {
       id: taskId,
-      assignedChildId: "seed_child",
+      assignedChildId: actor.id,
       state: "submitted",
     },
     include: {
@@ -233,7 +256,7 @@ export async function submitWishReflection(formData: FormData) {
     await tx.evidence.create({
       data: {
         taskId: task.id,
-        authorId: "seed_child",
+        authorId: actor.id,
         reflectionText: reflection,
         photoUrl: photoLabel ? `mock://${photoLabel}` : null,
         visibility: "contract_family",
@@ -257,7 +280,7 @@ export async function submitWishReflection(formData: FormData) {
     await tx.notification.create({
       data: {
         familyId: task.contract.familyId,
-        recipientUserId: "seed_parent",
+        recipientUserId: task.contract.createdById,
         type: "parent_response_needed",
         title: "A promise is ready for your response",
         body: "The child submitted a reflection for the 25-minute promise.",
@@ -268,7 +291,7 @@ export async function submitWishReflection(formData: FormData) {
       data: [
         {
           familyId: task.contract.familyId,
-          actorUserId: "seed_child",
+          actorUserId: actor.id,
           actorType: "child",
           eventName: "task_submitted_for_review",
           entityType: "Task",

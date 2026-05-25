@@ -1,18 +1,25 @@
 import Link from "next/link";
 import { getWitnessMemory, sendWitnessBlessing } from "@/lib/server/witness-flow";
 
+type Params = Promise<{
+  token: string;
+}>;
+
 type SearchParams = Promise<{
   error?: string;
   status?: string;
 }>;
 
-export default async function WitnessPage({
+export default async function WitnessTokenPage({
+  params,
   searchParams,
 }: {
+  params: Params;
   searchParams: SearchParams;
 }) {
-  const params = await searchParams;
-  const witness = await getWitnessMemory();
+  const { token } = await params;
+  const query = await searchParams;
+  const witness = await getWitnessMemory(token);
   const diary = witness?.contract.diaryEntries[0];
   const version = witness?.contract.versions[0];
 
@@ -27,11 +34,9 @@ export default async function WitnessPage({
           <p className="text-sm font-medium uppercase tracking-[0.08em] text-leaf">
             Witness view
           </p>
-          <h1 className="mt-2 text-4xl font-semibold leading-tight">
-            只见证，不裁判。
-          </h1>
+          <h1 className="mt-2 text-4xl font-semibold leading-tight">Safe memory summary</h1>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            这里只展示约定摘要和完成纪念。见证人不会看到孩子的小纸条、证据照片或家庭争议。
+            Witnesses only see a safe summary and one memory card.
           </p>
         </header>
 
@@ -39,7 +44,7 @@ export default async function WitnessPage({
           <section className="rounded-panel border border-[var(--line)] bg-white/70 p-5">
             <h2 className="text-lg font-semibold">No witness memory yet</h2>
             <p className="mt-2 text-sm text-[var(--muted)]">
-              Ask the family to generate a memorial witness link after diary creation.
+              This witness link is invalid, expired, or not ready.
             </p>
           </section>
         ) : (
@@ -54,7 +59,7 @@ export default async function WitnessPage({
               </div>
             </section>
 
-            {params.status === "sent" ? (
+            {query.status === "sent" ? (
               <p className="rounded-panel border border-[var(--line)] bg-white/70 px-4 py-3 text-sm">
                 Blessing saved.
               </p>
@@ -65,7 +70,7 @@ export default async function WitnessPage({
               className="grid gap-4 rounded-panel border border-[var(--line)] bg-white/70 p-5"
             >
               <input name="witnessId" type="hidden" value={witness.id} />
-              <input name="returnTo" type="hidden" value="/witness" />
+              <input name="returnTo" type="hidden" value={`/witness/${token}`} />
               <label className="grid gap-2 text-sm font-semibold">
                 One blessing
                 <textarea

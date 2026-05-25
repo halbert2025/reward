@@ -1,11 +1,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getCurrentActor } from "./auth/session-auth";
 import { prisma } from "./prisma";
 
 export async function getChildPrivateNotesForCurrentChild() {
+  const actor = await getCurrentActor();
+  const childId = actor.role === "child" ? actor.id : "seed_child";
+
   return prisma.childNote.findMany({
     where: {
-      childId: "seed_child",
+      childId,
       visibility: "child_private",
       archivedAt: null,
     },
@@ -16,12 +20,17 @@ export async function getChildPrivateNotesForCurrentChild() {
 export async function createChildPrivateNote(formData: FormData) {
   "use server";
 
+  const actor = await getCurrentActor();
+  if (actor.role !== "child") {
+    redirect("/child/notes?error=permission");
+  }
+
   const body = String(formData.get("body") ?? "").trim();
   const family = await prisma.family.findFirst({
     where: {
       members: {
         some: {
-          userId: "seed_child",
+          userId: actor.id,
           role: "child",
           status: "active",
         },
@@ -38,7 +47,7 @@ export async function createChildPrivateNote(formData: FormData) {
   await prisma.childNote.create({
     data: {
       familyId: family.id,
-      childId: "seed_child",
+      childId: actor.id,
       body,
       visibility: "child_private",
     },
@@ -47,7 +56,7 @@ export async function createChildPrivateNote(formData: FormData) {
   await prisma.auditLog.create({
     data: {
       familyId: family.id,
-      actorUserId: "seed_child",
+      actorUserId: actor.id,
       actorType: "child",
       eventName: "child_note_created",
       entityType: "ChildNote",

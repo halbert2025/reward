@@ -4,6 +4,7 @@ import { createWitnessInvite, getWitnessInviteContext } from "@/lib/server/witne
 type SearchParams = Promise<{
   error?: string;
   status?: string;
+  token?: string;
 }>;
 
 export default async function ParentWitnessPage({
@@ -14,6 +15,7 @@ export default async function ParentWitnessPage({
   const params = await searchParams;
   const contract = await getWitnessInviteContext();
   const witness = contract?.witnesses[0];
+  const witnessLink = params.token ? `/witness/${params.token}` : "/witness";
 
   return (
     <main className="min-h-screen px-6 py-8 sm:px-10">
@@ -51,7 +53,7 @@ export default async function ParentWitnessPage({
           <section className="grid gap-5 rounded-panel border border-[var(--line)] bg-white/70 p-5">
             <div className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-4 text-sm leading-6">
               <p>Wish: {contract.wish?.title ?? "Small family wish"}</p>
-              <p>Invite link: http://localhost:3000/witness</p>
+              <p>Invite link: {witnessLink}</p>
               <p>Status: {witness?.status ?? "not invited"}</p>
               <p>Blessing: {witness?.blessingMessage ?? "None yet"}</p>
             </div>
@@ -77,7 +79,7 @@ export default async function ParentWitnessPage({
             ) : (
               <Link
                 className="inline-flex rounded-panel bg-ink px-4 py-2 text-sm font-semibold text-white"
-                href="/witness"
+                href={witnessLink}
               >
                 Open witness view
               </Link>

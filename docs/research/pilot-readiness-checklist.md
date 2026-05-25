@@ -15,12 +15,12 @@
 
 - [x] parent 真实登录方案确定。
 - [x] child 邀请码方案确定。
-- [ ] witness 邀请链接实现完成。
+- [x] witness 邀请链接实现完成。
 - [x] 开发环境 mock role switcher 保留。
 - [x] 测试用户/生产环境 mock role switcher 默认关闭。
 - [x] parent 登录、创建家庭、child 邀请码加入 E2E 完成。
-- [ ] server action/API 不再依赖 seed actor。
-- [ ] 越权负向测试完成。
+- [x] P1 核心 server action/API 已切换为当前 actor，seed 仅保留 demo 兜底。
+- [x] P1 核心越权负向测试完成。
 
 ## 3. P2 线上数据库
 

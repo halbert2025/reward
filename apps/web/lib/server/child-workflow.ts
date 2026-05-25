@@ -1,9 +1,12 @@
 import { prisma } from "./prisma";
+import { getCurrentActor } from "./auth/session-auth";
 
 export async function getChildBackyardState() {
+  const actor = await getCurrentActor();
+  const childId = actor.role === "child" ? actor.id : "seed_child";
   const contract = await prisma.contract.findFirst({
     where: {
-      childId: "seed_child",
+      childId,
       archivedAt: null,
       state: {
         in: ["pending_child_confirm", "active", "completed", "fulfillment_pending"],
@@ -50,10 +53,12 @@ export async function getChildBackyardState() {
 }
 
 export async function getPomodoroState(taskId: string) {
+  const actor = await getCurrentActor();
+  const childId = actor.role === "child" ? actor.id : "seed_child";
   const task = await prisma.task.findFirst({
     where: {
       id: taskId,
-      assignedChildId: "seed_child",
+      assignedChildId: childId,
       archivedAt: null,
     },
     include: {

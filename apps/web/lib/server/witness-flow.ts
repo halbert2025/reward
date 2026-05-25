@@ -1,11 +1,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createRawToken, getCurrentActor, hashToken } from "./auth/session-auth";
 import { prisma } from "./prisma";
 
 export async function getWitnessInviteContext() {
+  const actor = await getCurrentActor();
+  const parentId = actor.role === "parent" || actor.role === "co_signer" ? actor.id : "seed_parent";
+
   return prisma.contract.findFirst({
     where: {
-      createdById: "seed_parent",
+      createdById: parentId,
       archivedAt: null,
       state: {
         in: ["diary_generated", "fulfilled", "delayed"],
@@ -26,9 +30,10 @@ export async function getWitnessInviteContext() {
   });
 }
 
-export async function getWitnessMemory() {
+export async function getWitnessMemory(rawToken?: string) {
   return prisma.witness.findFirst({
     where: {
+      ...(rawToken ? { inviteTokenHash: hashToken(rawToken) } : {}),
       status: {
         in: ["invited", "accepted"],
       },
@@ -60,10 +65,16 @@ export async function createWitnessInvite(formData: FormData) {
 
   const contractId = String(formData.get("contractId") ?? "");
   const displayName = String(formData.get("displayName") ?? "").trim() || "Memory witness";
+  const actor = await getCurrentActor();
+
+  if (actor.role !== "parent" && actor.role !== "co_signer") {
+    redirect("/parent/witness?error=permission");
+  }
+
   const contract = await prisma.contract.findFirst({
     where: {
       id: contractId,
-      createdById: "seed_parent",
+      createdById: actor.id,
       archivedAt: null,
     },
   });
@@ -80,12 +91,13 @@ export async function createWitnessInvite(formData: FormData) {
     redirect("/parent/witness?error=limit");
   }
 
+  const rawToken = createRawToken(18);
   const witness = await prisma.witness.create({
     data: {
       contractId,
-      invitedById: "seed_parent",
+      invitedById: actor.id,
       displayName,
-      inviteTokenHash: `demo-${contractId}`,
+      inviteTokenHash: hashToken(rawToken),
       status: "invited",
     },
   });
@@ -93,9 +105,9 @@ export async function createWitnessInvite(formData: FormData) {
   await prisma.auditLog.create({
     data: {
       familyId: contract.familyId,
-      actorUserId: "seed_parent",
+      actorUserId: actor.id,
       actorType: "parent",
-      eventName: "witness_invited",
+      eventName: "witness_invite_created",
       entityType: "Witness",
       entityId: witness.id,
       metadataJson: { scope: "memorial_only" },
@@ -103,7 +115,7 @@ export async function createWitnessInvite(formData: FormData) {
   });
 
   revalidatePath("/");
-  redirect("/parent/witness?status=created");
+  redirect(`/parent/witness?status=created&token=${encodeURIComponent(rawToken)}`);
 }
 
 export async function sendWitnessBlessing(formData: FormData) {
@@ -111,9 +123,11 @@ export async function sendWitnessBlessing(formData: FormData) {
 
   const witnessId = String(formData.get("witnessId") ?? "");
   const blessing = String(formData.get("blessing") ?? "").trim();
+  const returnTo = String(formData.get("returnTo") ?? "/witness");
+  const safeReturnTo = returnTo.startsWith("/witness") ? returnTo : "/witness";
 
   if (!blessing) {
-    redirect("/witness?error=empty");
+    redirect(`${safeReturnTo}?error=empty`);
   }
 
   const witness = await prisma.witness.findUnique({
@@ -122,7 +136,7 @@ export async function sendWitnessBlessing(formData: FormData) {
   });
 
   if (!witness) {
-    redirect("/witness?error=missing");
+    redirect(`${safeReturnTo}?error=missing`);
   }
 
   await prisma.witness.update({
@@ -147,5 +161,6 @@ export async function sendWitnessBlessing(formData: FormData) {
   });
 
   revalidatePath("/witness");
-  redirect("/witness?status=sent");
+  revalidatePath(safeReturnTo);
+  redirect(`${safeReturnTo}?status=sent`);
 }

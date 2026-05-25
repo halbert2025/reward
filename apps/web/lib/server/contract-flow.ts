@@ -4,13 +4,15 @@ import { canConfirmContract, canEditContractDraft } from "@reward/shared/permiss
 import { validateRewardInput } from "@reward/shared/safety-rules";
 import { Actor, ContractState } from "@reward/shared/state-machine";
 import { requireContractTransition } from "@reward/shared/transition-helpers";
-import { getCurrentMockActor } from "./auth/mock-auth";
+import { getCurrentActor } from "./auth/session-auth";
 import { prisma } from "./prisma";
 
 export async function getFirstContractDraftContext() {
+  const actor = await getCurrentActor();
+  const parentId = actor.role === "parent" || actor.role === "co_signer" ? actor.id : "seed_parent";
   const family = await prisma.family.findFirst({
     where: {
-      createdById: "seed_parent",
+      createdById: parentId,
       archivedAt: null,
     },
     orderBy: {
@@ -77,10 +79,13 @@ export async function getContractForPreview(contractId: string) {
 }
 
 export async function getChildConfirmContract(contractId: string) {
+  const actor = await getCurrentActor();
+  const childId = actor.role === "child" ? actor.id : "seed_child";
+
   return prisma.contract.findFirst({
     where: {
       id: contractId,
-      childId: "seed_child",
+      childId,
       archivedAt: null,
     },
     include: {
@@ -118,7 +123,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
     "Pomodoro completion plus one reflection sentence.";
   const repairText =
     getCleanText(formData, "repairText") || "The child may restart once.";
-  const actor = await getCurrentMockActor();
+  const actor = await getCurrentActor();
 
   if (actor.role !== "parent" && actor.role !== "co_signer") {
     redirect("/parent/contracts/new?error=permission");
@@ -127,11 +132,25 @@ export async function createOrReviseFirstContract(formData: FormData) {
   const family = familyId
     ? await prisma.family.findUnique({
         where: { id: familyId },
-        select: { principlesConfirmedAt: true },
+        select: {
+          principlesConfirmedAt: true,
+          members: {
+            where: {
+              role: "child",
+              status: "active",
+              deletedAt: null,
+            },
+            take: 1,
+            select: {
+              userId: true,
+            },
+          },
+        },
       })
     : null;
+  const childId = family?.members[0]?.userId;
 
-  if (!family?.principlesConfirmedAt) {
+  if (!family?.principlesConfirmedAt || !childId) {
     redirect("/parent/onboarding?step=principles&error=principles-required");
   }
 
@@ -172,7 +191,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
         where: {
           id: contractId,
           familyId,
-          createdById: "seed_parent",
+          createdById: actor.id,
           archivedAt: null,
         },
         include: {
@@ -223,7 +242,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
           rewardText,
           taskText: `${taskText}\nEvidence: ${evidenceText}\nFulfillment: today or within 24 hours.\nRepair: ${repairText}`,
           durationMinutes: 25,
-          createdById: "seed_parent",
+          createdById: actor.id,
         },
       });
 
@@ -251,7 +270,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
         data: [
           {
             familyId,
-            actorUserId: "seed_parent",
+            actorUserId: actor.id,
             actorType: "parent",
             eventName: "contract_version_created",
             entityType: "ContractVersion",
@@ -260,7 +279,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
           },
           {
             familyId,
-            actorUserId: "seed_parent",
+            actorUserId: actor.id,
             actorType: "parent",
             eventName: "contract_submitted",
             entityType: "Contract",
@@ -277,13 +296,13 @@ export async function createOrReviseFirstContract(formData: FormData) {
       data: {
         familyId,
         wishId,
-        createdById: "seed_parent",
-        childId: "seed_child",
+        createdById: actor.id,
+        childId,
         state: "draft",
         currentVersionNumber: 0,
         tasks: {
           create: {
-            assignedChildId: "seed_child",
+            assignedChildId: childId,
             title: taskText,
             plannedDurationMinutes: 25,
           },
@@ -292,13 +311,13 @@ export async function createOrReviseFirstContract(formData: FormData) {
           create: [
             {
               familyId,
-              userId: "seed_parent",
+              userId: actor.id,
               kind: "contract_owner",
               status: "active",
             },
             {
               familyId,
-              userId: "seed_child",
+              userId: childId,
               kind: "contract_child",
               status: "active",
             },
@@ -316,7 +335,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
         rewardText,
         taskText: `${taskText}\nEvidence: ${evidenceText}\nFulfillment: today or within 24 hours.\nRepair: ${repairText}`,
         durationMinutes: 25,
-        createdById: "seed_parent",
+        createdById: actor.id,
       },
     });
 
@@ -335,7 +354,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
     await tx.notification.create({
       data: {
         familyId,
-        recipientUserId: "seed_child",
+        recipientUserId: childId,
         type: "child_confirm_needed",
         title: "A small promise is ready",
         body: "Please review the 25-minute promise before it starts.",
@@ -346,7 +365,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
       data: [
         {
           familyId,
-          actorUserId: "seed_parent",
+          actorUserId: actor.id,
           actorType: "parent",
           eventName: "contract_version_created",
           entityType: "ContractVersion",
@@ -355,7 +374,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
         },
         {
           familyId,
-          actorUserId: "seed_parent",
+          actorUserId: actor.id,
           actorType: "parent",
           eventName: "contract_submitted",
           entityType: "Contract",
@@ -376,11 +395,11 @@ export async function childConfirmFirstContract(formData: FormData) {
   "use server";
 
   const contractId = getCleanText(formData, "contractId");
-  const actor = await getCurrentMockActor();
+  const actor = await getCurrentActor();
   const contract = await prisma.contract.findFirst({
     where: {
       id: contractId,
-      childId: "seed_child",
+      childId: actor.id,
       state: "pending_child_confirm",
       archivedAt: null,
     },
@@ -440,7 +459,7 @@ export async function childConfirmFirstContract(formData: FormData) {
     await tx.notification.create({
       data: {
         familyId: contract.familyId,
-        recipientUserId: "seed_child",
+        recipientUserId: actor.id,
         type: "child_can_start",
         title: "Your 25-minute promise can start",
         body: "The promise is active. Start when you are ready.",
@@ -451,7 +470,7 @@ export async function childConfirmFirstContract(formData: FormData) {
       data: [
         {
           familyId: contract.familyId,
-          actorUserId: "seed_child",
+          actorUserId: actor.id,
           actorType: "child",
           eventName: "contract_child_confirmed",
           entityType: "ContractVersion",

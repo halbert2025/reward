@@ -5,13 +5,16 @@ import { canCreateFulfillment } from "@reward/shared/permissions";
 import { validateNeutralRepairMessage } from "@reward/shared/safety-rules";
 import { Actor, ContractState as SharedContractState } from "@reward/shared/state-machine";
 import { requireContractTransition } from "@reward/shared/transition-helpers";
-import { getCurrentMockActor } from "./auth/mock-auth";
+import { getCurrentActor } from "./auth/session-auth";
 import { prisma } from "./prisma";
 
 export async function getPendingParentResponse() {
+  const actor = await getCurrentActor();
+  const parentId = actor.role === "parent" || actor.role === "co_signer" ? actor.id : "seed_parent";
+
   return prisma.contract.findFirst({
     where: {
-      createdById: "seed_parent",
+      createdById: parentId,
       state: "fulfillment_pending",
       archivedAt: null,
     },
@@ -76,12 +79,12 @@ export async function submitParentResponse(formData: FormData) {
   const message = clean(formData, "message");
   const delayReason = clean(formData, "delayReason");
   const expectedAt = clean(formData, "expectedAt");
-  const actor = await getCurrentMockActor();
+  const actor = await getCurrentActor();
 
   const contract = await prisma.contract.findFirst({
     where: {
       id: contractId,
-      createdById: "seed_parent",
+      createdById: actor.id,
       state: "fulfillment_pending",
       archivedAt: null,
     },
@@ -137,7 +140,7 @@ export async function submitParentResponse(formData: FormData) {
     const source = await tx.contract.findFirst({
       where: {
         id: contractId,
-        createdById: "seed_parent",
+        createdById: actor.id,
         state: "fulfillment_pending",
         archivedAt: null,
       },
@@ -175,7 +178,7 @@ export async function submitParentResponse(formData: FormData) {
     const fulfillment = await tx.fulfillment.create({
       data: {
         contractId,
-        respondedById: "seed_parent",
+        respondedById: actor.id,
         state: fulfillmentState,
         responseType: response,
         message: response === "delayed" ? delayReason : message || null,
@@ -189,7 +192,7 @@ export async function submitParentResponse(formData: FormData) {
       const repairCase = await tx.repairCase.create({
         data: {
           contractId,
-          openedById: "seed_parent",
+          openedById: actor.id,
           state: "opened",
           parentMessage: message,
         },
@@ -227,7 +230,7 @@ export async function submitParentResponse(formData: FormData) {
       data: [
         {
           familyId: source.familyId,
-          actorUserId: "seed_parent",
+          actorUserId: actor.id,
           actorType: "parent",
           eventName:
             responseType === "fulfilled"
