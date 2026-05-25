@@ -10,6 +10,15 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+function isAdminEmail(email: string) {
+  const configured = process.env.REWARD_ADMIN_EMAILS ?? "";
+  return configured
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(email);
+}
+
 export async function requestParentLogin(formData: FormData) {
   "use server";
 
@@ -54,18 +63,19 @@ export async function verifyParentLogin(formData: FormData) {
     redirect(`/auth/verify?email=${encodeURIComponent(email)}&error=code`);
   }
 
+  const roleHint = isAdminEmail(email) ? "admin" : "parent";
   const user = await prisma.user.upsert({
     where: {
       mockEmail: email,
     },
     update: {
-      roleHint: "parent",
+      roleHint,
       deletedAt: null,
     },
     create: {
       displayName: email.split("@")[0] || "Parent",
       mockEmail: email,
-      roleHint: "parent",
+      roleHint,
     },
   });
 
@@ -75,5 +85,5 @@ export async function verifyParentLogin(formData: FormData) {
   });
 
   await createUserSession(user.id);
-  redirect("/family/new");
+  redirect(roleHint === "admin" ? "/admin/pilot" : "/family/new");
 }

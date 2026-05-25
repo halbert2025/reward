@@ -121,7 +121,7 @@ function toPermissionRole(role: string | null | undefined): PermissionRole {
     return role;
   }
 
-  if (role === "system_admin") {
+  if (role === "system_admin" || role === "admin") {
     return "admin";
   }
 

@@ -14,6 +14,7 @@ Stage: P2 Production Data Layer
 | `STORAGE_PROVIDER` | `mock` | `mock` for first pilot | Real storage requires evidence policy review. |
 | `AI_PROVIDER_MODE` | `mock` or `template` | `mock` or `template` | `kimi` requires separate consent and redaction. |
 | `REWARD_ENABLE_MOCK_ROLE_SWITCHER` | `true` allowed | must not be `true` | Keeps demo tools out of test-user environments. |
+| `REWARD_ADMIN_EMAILS` | optional | required for admin access | Comma-separated allowlist for `/admin/pilot`. |
 
 ## Compatibility Variables
 

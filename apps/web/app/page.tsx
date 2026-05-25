@@ -196,6 +196,12 @@ export default async function HomePage() {
                 </Link>
                 <Link
                   className="rounded-panel border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold"
+                  href="/feedback"
+                >
+                  Pilot feedback
+                </Link>
+                <Link
+                  className="rounded-panel border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold"
                   href="/parent/invites"
                 >
                   Child invite

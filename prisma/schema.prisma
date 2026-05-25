@@ -194,21 +194,54 @@ enum DataRequestStatus {
   rejected_with_reason
 }
 
+enum PilotFeedbackRole {
+  parent
+  child
+  witness
+}
+
+enum PilotFeedbackType {
+  bug
+  usability
+  safety
+  general
+}
+
+enum PilotFeedbackStatus {
+  new
+  triaged
+  closed
+}
+
+enum RiskSignalLevel {
+  L3
+  L4
+  L5
+}
+
+enum RiskSignalStatus {
+  queued
+  in_review
+  resolved
+  dismissed
+}
+
 model User {
-  id            String         @id @default(cuid())
+  id            String          @id @default(cuid())
   displayName   String
-  mockEmail     String?        @unique
+  mockEmail     String?         @unique
   roleHint      ActorType?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   deletedAt     DateTime?
   familyMembers FamilyMember[]
   memberships   Membership[]
   authSessions  AuthSession[]
-  familyInvites FamilyInvite[] @relation("FamilyInvitesCreatedBy")
-  childNotes    ChildNote[]    @relation("ChildNotesByChild")
+  familyInvites FamilyInvite[]  @relation("FamilyInvitesCreatedBy")
+  childNotes    ChildNote[]     @relation("ChildNotesByChild")
   pilotConsents PilotConsent[]
   dataRequests  DataRequest[]
+  pilotFeedback PilotFeedback[]
   auditLogs     AuditLog[]
 }
 
@@ -231,6 +264,8 @@ model Family {
   invites               FamilyInvite[]
   pilotConsents         PilotConsent[]
   dataRequests          DataRequest[]
+  pilotFeedback         PilotFeedback[]
+  riskSignals           RiskSignal[]
   auditLogs             AuditLog[]
 }
 
@@ -268,6 +303,41 @@ model DataRequest {
 
   @@index([familyId, status])
   @@index([requestedById, status])
+}
+
+model PilotFeedback {
+  id            String              @id @default(cuid())
+  familyId      String?
+  submittedById String?
+  role          PilotFeedbackRole
+  type          PilotFeedbackType
+  status        PilotFeedbackStatus @default(new)
+  message       String
+  handlerNote   String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  family        Family?             @relation(fields: [familyId], references: [id])
+  submittedBy   User?               @relation(fields: [submittedById], references: [id])
+
+  @@index([familyId, status])
+  @@index([status, type])
+}
+
+model RiskSignal {
+  id           String           @id @default(cuid())
+  familyId     String?
+  sourceType   String
+  level        RiskSignalLevel
+  status       RiskSignalStatus @default(queued)
+  summary      String
+  reviewerNote String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  reviewedAt   DateTime?
+  family       Family?          @relation(fields: [familyId], references: [id])
+
+  @@index([familyId, status])
+  @@index([status, level])
 }
 
 model AuthSession {

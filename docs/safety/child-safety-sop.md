@@ -151,6 +151,13 @@ MVP 需要预留：
 - 非泄密提醒模板。
 - 安全日志事件类型。
 
+当前 P5 已实现最小预留：
+
+- `RiskSignal` 数据模型。
+- `/feedback` 的 safety 类型会进入人工复核队列。
+- `/admin/pilot` 可以将 RiskSignal 标记为 `queued`、`in_review`、`resolved` 或 `dismissed`。
+- 风险复核不会自动通知家长、见证人或外部机构。
+
 MVP 不做：
 
 - 自动报警。
