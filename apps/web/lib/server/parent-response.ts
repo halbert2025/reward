@@ -64,56 +64,6 @@ function clean(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
-async function createDiaryForResponse(
-  contractId: string,
-  responseLabel: string,
-  parentMessage: string,
-) {
-  const contract = await prisma.contract.findUnique({
-    where: { id: contractId },
-    include: {
-      family: true,
-      wish: true,
-      tasks: {
-        orderBy: { updatedAt: "desc" },
-        take: 1,
-        include: {
-          evidence: {
-            orderBy: { createdAt: "desc" },
-            take: 1,
-          },
-        },
-      },
-    },
-  });
-
-  const task = contract?.tasks[0];
-  const evidence = task?.evidence[0];
-
-  if (!contract || !task || !evidence) {
-    throw new Error("Diary source missing");
-  }
-
-  return prisma.diaryEntry.create({
-    data: {
-      familyId: contract.familyId,
-      contractId: contract.id,
-      title: `${contract.wish?.title ?? "Small wish"} memory card`,
-      summary: [
-        `Wish: ${contract.wish?.title ?? "Small family wish"}`,
-        `Task: ${task.title}`,
-        `Child reflection: ${evidence.reflectionText}`,
-        `Parent response: ${responseLabel}`,
-        `Completed at: ${task.completedAt?.toISOString() ?? evidence.createdAt.toISOString()}`,
-        "Quiet cat visit: The quiet cat came to the backyard and kept this effort as a small memory.",
-      ].join("\n"),
-      parentMessage: parentMessage || null,
-      childReflectionExcerpt: evidence.reflectionText,
-      backyardSignal: "quiet_cat_visit",
-    },
-  });
-}
-
 export async function submitParentResponse(formData: FormData) {
   "use server";
 
@@ -153,9 +103,42 @@ export async function submitParentResponse(formData: FormData) {
 
   const response = responseType as FulfillmentResponseType;
   const fulfillmentState = response as FulfillmentState;
-  const nextContractState = response as ContractState;
+  const responseLabel =
+    responseType === "fulfilled"
+      ? "Fulfilled"
+      : responseType === "delayed"
+        ? `Delayed: ${delayReason}`
+        : "Ready for a family review";
 
-  const diary = await prisma.$transaction(async (tx) => {
+  const diaryEntry = await prisma.$transaction(async (tx) => {
+    const source = await tx.contract.findFirst({
+      where: {
+        id: contractId,
+        createdById: "seed_parent",
+        state: "fulfillment_pending",
+        archivedAt: null,
+      },
+      include: {
+        wish: true,
+        tasks: {
+          orderBy: { updatedAt: "desc" },
+          take: 1,
+          include: {
+            evidence: {
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+    const task = source?.tasks[0];
+    const evidence = task?.evidence[0];
+
+    if (!source || !task || !evidence) {
+      throw new Error("Diary source missing");
+    }
+
     const fulfillment = await tx.fulfillment.create({
       data: {
         contractId,
@@ -168,8 +151,9 @@ export async function submitParentResponse(formData: FormData) {
       },
     });
 
+    let repairCaseId: string | null = null;
     if (response === "pending_repair") {
-      await tx.repairCase.create({
+      const repairCase = await tx.repairCase.create({
         data: {
           contractId,
           openedById: "seed_parent",
@@ -177,65 +161,68 @@ export async function submitParentResponse(formData: FormData) {
           parentMessage: message,
         },
       });
+      repairCaseId = repairCase.id;
     }
 
+    const diary = await tx.diaryEntry.create({
+      data: {
+        familyId: source.familyId,
+        contractId: source.id,
+        title: `${source.wish?.title ?? "Small wish"} memory card`,
+        summary: [
+          `Wish: ${source.wish?.title ?? "Small family wish"}`,
+          `Task: ${task.title}`,
+          `Child reflection: ${evidence.reflectionText}`,
+          `Parent response: ${responseLabel}`,
+          `Completed at: ${task.completedAt?.toISOString() ?? evidence.createdAt.toISOString()}`,
+          "Quiet cat visit: The quiet cat came to the backyard and kept this effort as a small memory.",
+        ].join("\n"),
+        parentMessage: message || null,
+        childReflectionExcerpt: evidence.reflectionText,
+        backyardSignal: "quiet_cat_visit",
+      },
+    });
+
     await tx.contract.update({
-      where: { id: contractId },
+      where: { id: source.id },
       data: {
-        state: nextContractState,
+        state: "diary_generated" as ContractState,
       },
     });
 
-    await tx.auditLog.create({
-      data: {
-        familyId: contract.familyId,
-        actorUserId: "seed_parent",
-        actorType: "parent",
-        eventName:
-          responseType === "fulfilled"
-            ? "fulfillment_marked_fulfilled"
-            : responseType === "delayed"
-              ? "fulfillment_marked_delayed"
-              : "repair_requested",
-        entityType: responseType === "pending_repair" ? "RepairCase" : "Fulfillment",
-        entityId: fulfillment.id,
-        metadataJson: {
-          responseType,
-          expectedAt: expectedAt || null,
+    await tx.auditLog.createMany({
+      data: [
+        {
+          familyId: source.familyId,
+          actorUserId: "seed_parent",
+          actorType: "parent",
+          eventName:
+            responseType === "fulfilled"
+              ? "fulfillment_marked_fulfilled"
+              : responseType === "delayed"
+                ? "fulfillment_marked_delayed"
+                : "repair_requested",
+          entityType: responseType === "pending_repair" ? "RepairCase" : "Fulfillment",
+          entityId: repairCaseId ?? fulfillment.id,
+          metadataJson: {
+            responseType,
+            expectedAt: expectedAt || null,
+          },
         },
-      },
+        {
+          familyId: source.familyId,
+          actorUserId: null,
+          actorType: "system",
+          eventName: "diary_generated",
+          entityType: "DiaryEntry",
+          entityId: diary.id,
+          metadataJson: { fulfillmentId: fulfillment.id },
+        },
+      ],
     });
 
-    return fulfillment;
+    return diary;
   });
-
-  const diaryEntry = await createDiaryForResponse(
-    contractId,
-    responseType === "fulfilled"
-      ? "Fulfilled"
-      : responseType === "delayed"
-        ? `Delayed: ${delayReason}`
-        : "Ready for a family review",
-    message,
-  );
-
-  await prisma.$transaction([
-    prisma.contract.update({
-      where: { id: contractId },
-      data: { state: "diary_generated" },
-    }),
-    prisma.auditLog.create({
-      data: {
-        familyId: contract.familyId,
-        actorUserId: null,
-        actorType: "system",
-        eventName: "diary_generated",
-        entityType: "DiaryEntry",
-        entityId: diaryEntry.id,
-        metadataJson: { fulfillmentId: diary.id },
-      },
-    }),
-  ]);
 
   revalidatePath("/");
   redirect(`/family/diary/${diaryEntry.id}`);
