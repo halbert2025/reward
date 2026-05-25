@@ -13,9 +13,9 @@
 
 ## 2. P1 真实身份与邀请
 
-- [ ] parent 真实登录方案确定。
-- [ ] child 邀请码方案确定。
-- [ ] witness 邀请链接方案确定。
+- [x] parent 真实登录方案确定。
+- [x] child 邀请码方案确定。
+- [x] witness 邀请链接方案确定。
 - [ ] 开发环境 mock role switcher 保留。
 - [ ] 测试用户/生产环境 mock role switcher 默认关闭。
 - [ ] server action/API 不再依赖 seed actor。
@@ -95,4 +95,3 @@
 当前状态：P0 已完成文档冻结，尚不能发给真实测试家庭。
 
 下一步：执行 P1 Auth & Family Invite。
-
