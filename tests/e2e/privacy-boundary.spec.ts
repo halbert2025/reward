@@ -44,7 +44,14 @@ test.describe("Reward MVP privacy boundaries", () => {
     await expect(page.getByText(/private note|ChildNote|reflection|evidence|amount|repair/i)).toHaveCount(0);
   });
 
-  test.skip("Kimi AI suggestion endpoint boundary is documented but no runtime endpoint exists in MVP", async () => {
-    // MVP keeps Kimi as a documented adapter boundary only.
+  test("Kimi AI suggestion endpoint is intentionally absent in MVP runtime", async ({ page }) => {
+    const response = await page.request.post("/api/ai/suggest", {
+      data: {
+        prompt: "suggest reward copy",
+        familyId: "seed_family",
+      },
+    });
+
+    expect(response.status()).toBe(404);
   });
 });

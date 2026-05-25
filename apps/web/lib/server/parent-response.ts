@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import type { ContractState, FulfillmentResponseType, FulfillmentState } from "@prisma/client";
 import { canCreateFulfillment } from "@reward/shared/permissions";
 import { validateNeutralRepairMessage } from "@reward/shared/safety-rules";
-import { ContractState as SharedContractState } from "@reward/shared/state-machine";
+import { Actor, ContractState as SharedContractState } from "@reward/shared/state-machine";
+import { requireContractTransition } from "@reward/shared/transition-helpers";
 import { getCurrentMockActor } from "./auth/mock-auth";
 import { prisma } from "./prisma";
 
@@ -119,6 +120,12 @@ export async function submitParentResponse(formData: FormData) {
 
   const response = responseType as FulfillmentResponseType;
   const fulfillmentState = response as FulfillmentState;
+  const responseEvent =
+    response === "fulfilled"
+      ? "fulfillment.mark_fulfilled"
+      : response === "delayed"
+        ? "fulfillment.mark_delayed"
+        : "fulfillment.request_repair";
   const responseLabel =
     responseType === "fulfilled"
       ? "Fulfilled"
@@ -154,6 +161,16 @@ export async function submitParentResponse(formData: FormData) {
     if (!source || !task || !evidence) {
       throw new Error("Diary source missing");
     }
+    const responseContractState = requireContractTransition(
+      source.state as SharedContractState,
+      responseEvent,
+      Actor.Parent,
+    );
+    const diaryGeneratedState = requireContractTransition(
+      responseContractState,
+      "diary.generate",
+      Actor.System,
+    );
 
     const fulfillment = await tx.fulfillment.create({
       data: {
@@ -202,7 +219,7 @@ export async function submitParentResponse(formData: FormData) {
     await tx.contract.update({
       where: { id: source.id },
       data: {
-        state: "diary_generated" as ContractState,
+        state: diaryGeneratedState as unknown as ContractState,
       },
     });
 

@@ -2,22 +2,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canConfirmContract, canEditContractDraft } from "@reward/shared/permissions";
 import { validateRewardInput } from "@reward/shared/safety-rules";
-import { ContractState } from "@reward/shared/state-machine";
+import { Actor, ContractState } from "@reward/shared/state-machine";
+import { requireContractTransition } from "@reward/shared/transition-helpers";
 import { getCurrentMockActor } from "./auth/mock-auth";
 import { prisma } from "./prisma";
-
-const forbiddenContractTerms = [
-  "school",
-  "class",
-  "teacher",
-  "institution",
-  "merchant",
-  "payment",
-  "wallet",
-  "cash",
-  "store",
-  "shopping",
-];
 
 export async function getFirstContractDraftContext() {
   const family = await prisma.family.findFirst({
@@ -112,11 +100,6 @@ function getCleanText(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
-function containsForbiddenContractTerm(value: string) {
-  const normalized = value.toLowerCase();
-  return forbiddenContractTerms.some((term) => normalized.includes(term));
-}
-
 export async function createOrReviseFirstContract(formData: FormData) {
   "use server";
 
@@ -165,7 +148,6 @@ export async function createOrReviseFirstContract(formData: FormData) {
   });
 
   const rewardText = wish ? `Small wish reward: ${wish.title}` : "";
-  const combined = `${title} ${promiseText} ${taskText} ${evidenceText} ${rewardText}`;
   const rewardValidation = validateRewardInput({
     title,
     promiseText,
@@ -180,8 +162,8 @@ export async function createOrReviseFirstContract(formData: FormData) {
     redirect("/parent/contracts/new?error=wish");
   }
 
-  if (containsForbiddenContractTerm(combined) || !rewardValidation.ok) {
-    redirect(`/parent/contracts/new?error=${rewardValidation.ok ? "contract" : rewardValidation.code}`);
+  if (!rewardValidation.ok) {
+    redirect(`/parent/contracts/new?error=${rewardValidation.code}`);
   }
 
   const contract = await prisma.$transaction(async (tx) => {
@@ -223,6 +205,15 @@ export async function createOrReviseFirstContract(formData: FormData) {
       }
 
       const nextVersionNumber = (existing.versions[0]?.versionNumber ?? 0) + 1;
+      const transitionEvent =
+        existing.state === ContractState.Draft
+          ? "contract.submit_for_child"
+          : "contract.revise_for_child";
+      const nextState = requireContractTransition(
+        existing.state as ContractState,
+        transitionEvent,
+        Actor.Parent,
+      );
       const version = await tx.contractVersion.create({
         data: {
           contractId: existing.id,
@@ -240,7 +231,7 @@ export async function createOrReviseFirstContract(formData: FormData) {
         where: { id: existing.id },
         data: {
           wishId,
-          state: "pending_child_confirm",
+          state: nextState,
           acceptedVersionId: null,
           currentVersionNumber: nextVersionNumber,
           tasks: {
@@ -332,7 +323,11 @@ export async function createOrReviseFirstContract(formData: FormData) {
     await tx.contract.update({
       where: { id: created.id },
       data: {
-        state: "pending_child_confirm",
+        state: requireContractTransition(
+          ContractState.Draft,
+          "contract.submit_for_child",
+          Actor.Parent,
+        ),
         currentVersionNumber: 1,
       },
     });
@@ -418,6 +413,17 @@ export async function childConfirmFirstContract(formData: FormData) {
   }
 
   await prisma.$transaction(async (tx) => {
+    const confirmedState = requireContractTransition(
+      ContractState.PendingChildConfirm,
+      "contract.child_confirm",
+      Actor.Child,
+    );
+    const activeState = requireContractTransition(
+      confirmedState,
+      "contract.activate",
+      Actor.System,
+    );
+
     await tx.contractVersion.update({
       where: { id: version.id },
       data: { confirmedAt: new Date() },
@@ -427,7 +433,7 @@ export async function childConfirmFirstContract(formData: FormData) {
       where: { id: contract.id },
       data: {
         acceptedVersionId: version.id,
-        state: "active",
+        state: activeState,
       },
     });
 

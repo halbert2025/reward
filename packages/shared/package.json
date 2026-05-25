@@ -8,6 +8,7 @@
     "./api-types": "./src/api-types.ts",
     "./safety-rules": "./src/safety-rules.ts",
     "./state-machine": "./src/state-machine.ts",
+    "./transition-helpers": "./src/transition-helpers.ts",
     "./types": "./src/types.ts"
   }
 }
