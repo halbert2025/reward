@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getChildBackyardState } from "@/lib/server/child-workflow";
 
 type SearchParams = Promise<{
@@ -30,34 +31,31 @@ export default async function ChildBackyardPage({
             准备好了吗？开始为愿望充能。
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-            This space shows the current family promise without rankings, video, or
-            hard locks.
+            这里展示当前家庭约定。没有排名、视频监控或锁机，只记录一次安静的守约过程。
           </p>
         </header>
 
         {params.error === "not-ready" ? (
           <p className="rounded-panel border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            这个愿望还没准备好，请先确认约定。
+            这个愿望还没有准备好，请先确认约定。
           </p>
         ) : null}
 
         {catVisit ? (
-          <section className="grid gap-4 rounded-panel border border-[var(--line)] bg-white/70 p-5 sm:grid-cols-[120px_1fr]">
-            <div className="flex aspect-square items-center justify-center rounded-panel border border-[var(--line)] bg-[var(--background)]">
-              <div className="relative h-20 w-24">
-                <div className="absolute left-5 top-5 h-12 w-14 rounded-[48%] bg-[#f4c36d]" />
-                <div className="absolute left-7 top-1 h-12 w-12 rounded-[46%] bg-[#f6cf87]" />
-                <div className="absolute left-7 top-0 h-5 w-5 rotate-[-20deg] bg-[#f6cf87] [clip-path:polygon(50%_0,0_100%,100%_100%)]" />
-                <div className="absolute left-14 top-0 h-5 w-5 rotate-[20deg] bg-[#f6cf87] [clip-path:polygon(50%_0,0_100%,100%_100%)]" />
-                <div className="absolute left-[42px] top-6 h-1.5 w-1.5 rounded-full bg-ink" />
-                <div className="absolute left-[58px] top-6 h-1.5 w-1.5 rounded-full bg-ink" />
-                <div className="absolute bottom-0 left-0 right-0 h-4 rounded-full bg-[#d8e7c2]" />
-              </div>
+          <section className="grid gap-4 rounded-panel border border-[var(--line)] bg-white/70 p-5 sm:grid-cols-[150px_1fr]">
+            <div className="overflow-hidden rounded-panel border border-[var(--line)] bg-[#102723]">
+              <Image
+                alt=""
+                className="aspect-square h-full w-full object-cover"
+                height={300}
+                src="/assets/pomodoro/coffee/drink_cat_latte_art_close_01.png"
+                width={300}
+              />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">安静猫来了</h2>
+              <h2 className="text-lg font-semibold">安静猫猫来过了</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                你的努力已经被记录下来了。今天的小院已经更新啦，去做点别的吧，猫猫会等你回来。
+                你的努力已经被记录下来。今天的小院更新了一杯猫猫拉花饮品，接下来等家长回应就好。
               </p>
               <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
                 This visit is the MVP memory-card feedback for a completed wish pomodoro.
@@ -65,19 +63,20 @@ export default async function ChildBackyardPage({
             </div>
           </section>
         ) : (
-          <section className="grid gap-4 rounded-panel border border-[var(--line)] bg-white/70 p-5 sm:grid-cols-[120px_1fr]">
-            <div className="flex aspect-square items-center justify-center rounded-panel border border-[var(--line)] bg-[var(--background)]">
-              <div className="relative h-16 w-24">
-                <div className="absolute bottom-2 left-6 h-8 w-12 rounded-full bg-[#d8e7c2]" />
-                <div className="absolute bottom-5 left-10 h-5 w-5 rounded-full bg-[#f6cf87]" />
-                <div className="absolute bottom-9 left-10 h-3 w-3 rotate-[-20deg] bg-[#f6cf87] [clip-path:polygon(50%_0,0_100%,100%_100%)]" />
-                <div className="absolute bottom-9 left-14 h-3 w-3 rotate-[20deg] bg-[#f6cf87] [clip-path:polygon(50%_0,0_100%,100%_100%)]" />
-              </div>
+          <section className="grid gap-4 rounded-panel border border-[var(--line)] bg-white/70 p-5 sm:grid-cols-[150px_1fr]">
+            <div className="overflow-hidden rounded-panel border border-[var(--line)] bg-[#102723]">
+              <Image
+                alt=""
+                className="aspect-square h-full w-full object-cover"
+                height={300}
+                src="/assets/pomodoro/coffee/scene_teahouse_empty_wide_01.png"
+                width={300}
+              />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Quiet cat corner</h2>
-              <p className="mt-2 text-sm text-[var(--muted)]">
-                Complete one small promise and the quiet cat will visit this backyard.
+              <h2 className="text-lg font-semibold">森林猫猫奶茶厅</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                完成一个小约定后，猫猫会把这次努力做成一杯安静的饮品，留在小院里。
               </p>
             </div>
           </section>
@@ -124,7 +123,7 @@ export default async function ChildBackyardPage({
               ) : contract.state === "active" ? (
                 <>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Start only when you feel ready. No camera or device lock is used.
+                    准备好再开始。这里不会打开摄像头，也不会锁住设备。
                   </p>
                   <Link
                     className="mt-4 inline-flex rounded-panel bg-ink px-4 py-2 text-sm font-semibold text-white"

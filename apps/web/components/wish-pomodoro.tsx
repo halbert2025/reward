@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   completeWishPomodoro,
   exitWishPomodoro,
@@ -15,6 +16,11 @@ type WishPomodoroProps = {
 };
 
 const debugSeconds = 8;
+const halfTimeGuestSecond = Math.floor(debugSeconds / 2);
+
+function formatTime(seconds: number) {
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
 
 export function WishPomodoro({
   taskId,
@@ -24,8 +30,15 @@ export function WishPomodoro({
 }: WishPomodoroProps) {
   const [remaining, setRemaining] = useState(debugSeconds);
   const [showExit, setShowExit] = useState(false);
+  const [catLookedUp, setCatLookedUp] = useState(false);
   const isRunning = taskState === "running";
   const readyToComplete = isRunning && remaining <= 0;
+  const showGuest = isRunning && remaining <= halfTimeGuestSecond;
+  const sceneImage = readyToComplete
+    ? "/assets/pomodoro/coffee/barista_serve_drink_counter_close_01.png"
+    : catLookedUp
+      ? "/assets/pomodoro/coffee/barista_look_up_counter_close_01.png"
+      : "/assets/pomodoro/coffee/barista_idle_counter_close_01.png";
 
   useEffect(() => {
     if (!isRunning || remaining <= 0) {
@@ -42,36 +55,66 @@ export function WishPomodoro({
   return (
     <section className="grid gap-5 rounded-panel border border-[var(--line)] bg-white/70 p-5">
       <div>
-        <p className="text-sm font-medium text-leaf">Cat backyard timer</p>
+        <p className="text-sm font-medium text-leaf">森林猫猫奶茶厅</p>
         <h1 className="mt-2 text-4xl font-semibold leading-tight">{wishTitle}</h1>
         <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{title}</p>
       </div>
 
-      <div className="grid gap-4 rounded-panel border border-[var(--line)] bg-[var(--background)] p-5 sm:grid-cols-[0.8fr_1.2fr]">
-        <div className="flex aspect-square items-center justify-center rounded-panel border border-[var(--line)] bg-white">
-          <div className="relative h-32 w-40">
-            <div className="absolute left-8 top-8 h-20 w-24 rounded-[48%] bg-[#f4c36d]" />
-            <div className="absolute left-12 top-2 h-20 w-20 rounded-[46%] bg-[#f6cf87]" />
-            <div className="absolute left-12 top-0 h-8 w-8 rotate-[-20deg] bg-[#f6cf87] [clip-path:polygon(50%_0,0_100%,100%_100%)]" />
-            <div className="absolute left-24 top-0 h-8 w-8 rotate-[20deg] bg-[#f6cf87] [clip-path:polygon(50%_0,0_100%,100%_100%)]" />
-            <div className="absolute left-[70px] top-9 h-2 w-2 rounded-full bg-ink" />
-            <div className="absolute left-[98px] top-9 h-2 w-2 rounded-full bg-ink" />
-            <div className="absolute left-[84px] top-12 h-2 w-3 rounded-full bg-[#c2745d]" />
-            <div className="absolute left-28 top-20 h-10 w-14 rounded-full border-8 border-l-0 border-[#f4c36d]" />
-            <div className="absolute bottom-0 left-1 right-1 h-6 rounded-full bg-[#d8e7c2]" />
-          </div>
-        </div>
-        <div className="flex flex-col justify-center text-center sm:text-left">
-          <p className="text-sm font-semibold text-[var(--muted)]">
-            Product promise: 25 minutes
-          </p>
-          <p className="mt-3 text-6xl font-semibold tabular-nums">
-            {String(Math.floor(remaining / 60)).padStart(2, "0")}:
-            {String(remaining % 60).padStart(2, "0")}
-          </p>
+      <div className="grid gap-4 rounded-panel border border-[var(--line)] bg-[#102723] p-4 sm:grid-cols-[1.15fr_0.85fr]">
+        <button
+          aria-label="轻点柜台"
+          className="group relative block aspect-[4/3] overflow-hidden rounded-panel border border-[#335147] bg-[#18352f] text-left shadow-inner focus:outline-none focus:ring-2 focus:ring-[#f2d58b]"
+          onClick={() => setCatLookedUp(true)}
+          type="button"
+        >
+          <Image
+            alt=""
+            fill
+            className="absolute inset-0 h-full w-full object-cover opacity-65"
+            sizes="(min-width: 640px) 55vw, 100vw"
+            src="/assets/pomodoro/coffee/scene_teahouse_empty_wide_01.png"
+          />
+          {showGuest ? (
+            <Image
+              alt=""
+              fill
+              className="absolute inset-0 h-full w-full object-cover opacity-85 transition-opacity duration-700"
+              sizes="(min-width: 640px) 55vw, 100vw"
+              src="/assets/pomodoro/coffee/guest_back_bar_scene_wide_01.png"
+            />
+          ) : null}
+          <Image
+            alt=""
+            className="absolute inset-x-[9%] bottom-[5%] h-[74%] w-[82%] rounded-panel object-cover object-center opacity-95 transition-transform duration-700 group-active:scale-[1.01]"
+            height={520}
+            src={sceneImage}
+            width={640}
+          />
+          {readyToComplete ? (
+            <Image
+              alt=""
+              className="absolute bottom-[5%] right-[6%] h-[30%] w-[30%] rounded-full object-cover shadow-lg"
+              height={180}
+              src="/assets/pomodoro/coffee/drink_cat_latte_art_close_01.png"
+              width={180}
+            />
+          ) : null}
+          <span className="absolute left-3 top-3 rounded-panel bg-[#102723]/75 px-3 py-1 text-xs font-semibold text-[#f7e7bb]">
+            {readyToComplete
+              ? "饮品完成"
+              : showGuest
+                ? "有猫猫安静坐下"
+                : catLookedUp
+                  ? "猫猫看了你一眼"
+                  : "安静制作中"}
+          </span>
+        </button>
+
+        <div className="flex flex-col justify-center rounded-panel border border-[#335147] bg-[#f7f0d8] p-5 text-center sm:text-left">
+          <p className="text-sm font-semibold text-[var(--muted)]">产品约定：25 分钟</p>
+          <p className="mt-3 text-6xl font-semibold tabular-nums">{formatTime(remaining)}</p>
           <p className="mt-3 text-xs leading-5 text-[var(--muted)]">
-            A quiet cat is keeping the backyard warm while you focus. Debug timer is
-            shortened for desktop testing.
+            当前电脑端验收使用 8 秒调试倒计时。真实试点仍按 25 分钟记录，不做摄像头、锁机或排名。
           </p>
         </div>
       </div>
@@ -110,9 +153,9 @@ export function WishPomodoro({
 
       {showExit ? (
         <div className="rounded-panel border border-[var(--line)] bg-white p-4">
-          <h2 className="text-lg font-semibold">这次先停下</h2>
+          <h2 className="text-lg font-semibold">这次先停一下</h2>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-            如果这次先停下，写一句原因就好。
+            如果这次先停下来，写一句原因就好。原因只用于复盘和家长理解，不会变成惩罚。
           </p>
           <form action={exitWishPomodoro} className="mt-4 grid gap-3">
             <input name="taskId" type="hidden" value={taskId} />
@@ -121,10 +164,10 @@ export function WishPomodoro({
               name="exitReason"
               required
             >
-              <option value="">Choose a reason</option>
-              <option value="Need a break">Need a break</option>
-              <option value="Need help from parent">Need help from parent</option>
-              <option value="The promise needs a better time">The promise needs a better time</option>
+              <option value="">选择一个原因</option>
+              <option value="Need a break">需要休息一下</option>
+              <option value="Need help from parent">需要家长帮忙</option>
+              <option value="The promise needs a better time">这个约定需要换个时间</option>
             </select>
             <div className="grid gap-3 sm:grid-cols-2">
               <button
@@ -132,13 +175,13 @@ export function WishPomodoro({
                 onClick={() => setShowExit(false)}
                 type="button"
               >
-                Return
+                返回
               </button>
               <button
                 className="rounded-panel bg-ink px-4 py-2 text-sm font-semibold text-white"
                 type="submit"
               >
-                Save reason
+                保存原因
               </button>
             </div>
           </form>

@@ -14,7 +14,7 @@ const errorCopy: Record<string, string> = {
   reflection: "写一句你刚才做了什么就可以。",
   notice: "如果填写照片说明，请先确认当前测试版不上传真实照片，并避开敏感信息。",
   EVIDENCE_PRIVACY_RISK:
-    "只拍任务成果局部，避开人脸、住址、学校标识、证件、聊天截图和定位信息。",
+    "只写任务成果局部，避开人脸、住址、学校标识、证件、聊天截图和定位信息。",
   EVIDENCE_PLACEHOLDER_TOO_LONG: "照片说明保持简短即可，当前测试版不上传真实照片。",
 };
 
@@ -60,7 +60,7 @@ export default async function ReflectionPage({
             你的努力已经被记录下来了。
           </h1>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            写一句复盘就可以。照片是可选项，MVP 只保存本地/mock 证据信息。
+            写一句复盘就可以。照片是可选项，MVP 只保存本地 mock 证据说明。
           </p>
         </header>
 
@@ -95,8 +95,7 @@ export default async function ReflectionPage({
           </label>
 
           <p className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-4 text-sm leading-6 text-[var(--muted)]">
-            当前测试版不上传真实照片，只保存一条 mock 照片说明。可以跳过照片；
-            如果填写说明，请避开人脸、住址、学校标识、证件、聊天截图和定位信息。
+            当前测试版不上传真实照片，只保存一条 mock 照片说明。可以跳过照片；如果填写说明，请避开人脸、住址、学校标识、证件、聊天截图和定位信息。
           </p>
 
           <label className="flex gap-3 text-sm leading-6">

@@ -36,14 +36,14 @@ export default async function PomodoroPage({
 
   return (
     <main className="min-h-screen px-6 py-8 sm:px-10">
-      <section className="mx-auto flex max-w-4xl flex-col gap-6">
+      <section className="mx-auto flex max-w-5xl flex-col gap-6">
         <Link className="text-sm font-semibold text-leaf" href="/child/backyard">
           Back to backyard
         </Link>
 
         {query.error === "exit-reason" ? (
           <p className="rounded-panel border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            如果这次先停下，写一句原因就好。
+            如果这次先停下来，写一句原因就好。
           </p>
         ) : null}
 
