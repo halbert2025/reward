@@ -43,6 +43,14 @@ function validateUrl(name, value, errors) {
   }
 }
 
+function isHttpsUrl(value) {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function validateRewardEnv(env = process.env) {
   const appEnv = (env.APP_ENV || env.NODE_ENV || "local").trim();
   const storageProvider = (env.STORAGE_PROVIDER || env.EVIDENCE_STORAGE_MODE || "mock").trim();
@@ -51,6 +59,10 @@ export function validateRewardEnv(env = process.env) {
   const authSecret = (env.AUTH_SECRET || "").trim();
   const appBaseUrl = (env.APP_BASE_URL || "").trim();
   const mockSwitcher = (env.REWARD_ENABLE_MOCK_ROLE_SWITCHER || env.MOCK_AUTH_ENABLED || "").trim();
+  const adminEmails = (env.REWARD_ADMIN_EMAILS || "").trim();
+  const allowDemoSeed = (env.ALLOW_DEMO_SEED || "").trim();
+  const notificationMode = (env.NOTIFICATION_MODE || "in_app").trim();
+  const paymentsEnabled = (env.REWARD_ENABLE_PAYMENTS || env.ENABLE_PAYMENTS || "").trim();
 
   const errors = [];
   const warnings = [];
@@ -82,6 +94,18 @@ export function validateRewardEnv(env = process.env) {
       errors.push("AUTH_SECRET must be set to at least 32 characters for pilot/production.");
     }
 
+    if (!isHttpsUrl(appBaseUrl)) {
+      errors.push("pilot/production APP_BASE_URL must use HTTPS.");
+    }
+
+    if (!adminEmails) {
+      errors.push("REWARD_ADMIN_EMAILS is required for pilot/production admin access.");
+    }
+
+    if (allowDemoSeed === "true") {
+      errors.push("ALLOW_DEMO_SEED must not be true for pilot/production.");
+    }
+
     if (databaseUrl.startsWith("file:")) {
       errors.push("pilot/production DATABASE_URL must not use SQLite file: URLs.");
     }
@@ -92,6 +116,14 @@ export function validateRewardEnv(env = process.env) {
 
     if (mockSwitcher === "true") {
       errors.push("REWARD_ENABLE_MOCK_ROLE_SWITCHER/MOCK_AUTH_ENABLED must not be true for pilot/production.");
+    }
+
+    if (notificationMode !== "in_app") {
+      errors.push("NOTIFICATION_MODE must remain in_app for the first pilot.");
+    }
+
+    if (paymentsEnabled === "true") {
+      errors.push("REWARD_ENABLE_PAYMENTS/ENABLE_PAYMENTS must not be true for pilot/production.");
     }
 
     if (storageProvider !== "mock") {
@@ -112,6 +144,7 @@ export function validateRewardEnv(env = process.env) {
     appEnv,
     storageProvider,
     aiProviderMode,
+    notificationMode,
     databaseUrlKind: databaseUrl.startsWith("file:")
       ? "sqlite"
       : databaseUrl.startsWith("postgres")

@@ -16,6 +16,9 @@ Stage: P2 Production Data Layer
 | `REWARD_ENABLE_MOCK_ROLE_SWITCHER` | `true` allowed | must not be `true` | Keeps demo tools out of test-user environments. |
 | `REWARD_ADMIN_EMAILS` | optional | required for admin access | Comma-separated allowlist for `/admin/pilot`. |
 | `REWARD_INVITES_PAUSED` | `false` | `false` unless incident response | Blocks creation of new child invites when `true`. |
+| `ALLOW_DEMO_SEED` | `false` | must be `false` | Demo seed is forbidden in pilot/production. |
+| `NOTIFICATION_MODE` | `in_app` | `in_app` | Real push is not in first-pilot scope. |
+| `REWARD_ENABLE_PAYMENTS` | `false` | must not be `true` | Payment is outside MVP/Pilot scope. |
 
 ## Compatibility Variables
 
@@ -32,7 +35,6 @@ The code still accepts these older names while the app is moving from MVP demo t
 | Variable | Default | Notes |
 | --- | --- | --- |
 | `EVIDENCE_MAX_MB` | `5` | Applies when real evidence storage is introduced. |
-| `NOTIFICATION_MODE` | `in_app` | Real push is not in pilot scope yet. |
 | `KIMI_API_KEY` | empty | Must stay empty unless AI consent and redaction are implemented. |
 | `KIMI_BASE_URL` | provider default | Future-only. |
 | `KIMI_MODEL` | provider default | Future-only. |
@@ -51,6 +53,8 @@ REWARD_ENABLE_MOCK_ROLE_SWITCHER=true
 STORAGE_PROVIDER=mock
 AI_PROVIDER_MODE=mock
 ALLOW_DEMO_SEED=false
+NOTIFICATION_MODE=in_app
+REWARD_ENABLE_PAYMENTS=false
 ```
 
 ## Pilot Example
@@ -64,6 +68,8 @@ REWARD_ENABLE_MOCK_ROLE_SWITCHER=false
 STORAGE_PROVIDER=mock
 AI_PROVIDER_MODE=mock
 ALLOW_DEMO_SEED=false
+NOTIFICATION_MODE=in_app
+REWARD_ENABLE_PAYMENTS=false
 ```
 
 ## Validation
