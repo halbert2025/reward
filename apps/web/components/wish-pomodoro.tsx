@@ -17,6 +17,12 @@ type WishPomodoroProps = {
 
 const debugSeconds = 8;
 const halfTimeGuestSecond = Math.floor(debugSeconds / 2);
+const ipStates = [
+  { label: "待机", trigger: "还没开始", copy: "猫猫在擦杯子，等你准备好。" },
+  { label: "专注", trigger: "计时中", copy: "猫猫安静做饮品，不催促。" },
+  { label: "来访", trigger: "半程后", copy: "有客人坐下，空间仍然安静。" },
+  { label: "完成", trigger: "倒计时结束", copy: "递上一杯猫猫笑脸拉花。" },
+];
 
 function formatTime(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
@@ -117,6 +123,19 @@ export function WishPomodoro({
             当前电脑端验收使用 8 秒调试倒计时。真实试点仍按 25 分钟记录，不做摄像头、锁机或排名。
           </p>
         </div>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-4">
+        {ipStates.map((state) => (
+          <div
+            className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-3"
+            key={state.label}
+          >
+            <p className="text-sm font-semibold">{state.label}</p>
+            <p className="mt-1 text-xs text-[var(--muted)]">{state.trigger}</p>
+            <p className="mt-2 text-xs leading-5 text-[var(--muted)]">{state.copy}</p>
+          </div>
+        ))}
       </div>
 
       {!isRunning ? (

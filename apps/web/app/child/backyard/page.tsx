@@ -13,7 +13,7 @@ export default async function ChildBackyardPage({
   searchParams: SearchParams;
 }) {
   const params = await searchParams;
-  const { contract, latestVersion, task, quietCatVisit } = await getChildBackyardState();
+  const { contract, latestVersion, task, quietCatVisit, stats } = await getChildBackyardState();
   const catVisit = quietCatVisit || params.status === "cat-visit";
 
   return (
@@ -81,6 +81,36 @@ export default async function ChildBackyardPage({
             </div>
           </section>
         )}
+
+        <section className="grid gap-4 rounded-panel border border-[var(--line)] bg-white/70 p-5 md:grid-cols-[1fr_auto]">
+          <div>
+            <p className="text-sm font-medium text-leaf">Reward collection</p>
+            <h2 className="mt-2 text-lg font-semibold">今日小票会被收进收藏册</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              每次完成番茄钟后，系统会保存一张猫猫奶茶小票。它不是排名，也不会公开给见证人看，只用来回看自己的努力。
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center md:min-w-80">
+            <div className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-3">
+              <p className="text-2xl font-semibold">{stats.completedTasks}</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">已完成</p>
+            </div>
+            <div className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-3">
+              <p className="text-2xl font-semibold">{stats.rewardTicketCount}</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">小票</p>
+            </div>
+            <div className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-3">
+              <p className="text-2xl font-semibold">{stats.totalFocusMinutes}</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">分钟</p>
+            </div>
+          </div>
+          <Link
+            className="inline-flex w-fit rounded-panel border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold md:col-span-2"
+            href="/child/rewards"
+          >
+            查看小票收藏册
+          </Link>
+        </section>
 
         {!contract || !latestVersion || !task ? (
           <section className="rounded-panel border border-[var(--line)] bg-white/70 p-5">

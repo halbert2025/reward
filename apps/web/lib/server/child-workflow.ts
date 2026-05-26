@@ -43,12 +43,43 @@ export async function getChildBackyardState() {
       contract?.state === "completed" ||
       contract?.state === "fulfillment_pending",
   );
+  const completedTasks = await prisma.task.count({
+    where: {
+      assignedChildId: childId,
+      completedAt: {
+        not: null,
+      },
+      archivedAt: null,
+    },
+  });
+  const rewardTicketCount = await prisma.evidence.count({
+    where: {
+      authorId: childId,
+      task: {
+        archivedAt: null,
+      },
+    },
+  });
+  const totalFocusSeconds = await prisma.focusSession.aggregate({
+    where: {
+      childId,
+      state: "completed",
+    },
+    _sum: {
+      durationSeconds: true,
+    },
+  });
 
   return {
     contract,
     latestVersion: contract?.versions[0],
     task: contract?.tasks[0],
     quietCatVisit,
+    stats: {
+      completedTasks,
+      rewardTicketCount,
+      totalFocusMinutes: Math.round((totalFocusSeconds._sum.durationSeconds ?? 0) / 60),
+    },
   };
 }
 
@@ -91,5 +122,59 @@ export async function getPomodoroState(taskId: string) {
     latestVersion: task?.contract.versions[0],
     latestSession: task?.focusSessions[0],
     latestEvidence: task?.evidence[0],
+  };
+}
+
+export async function getChildRewardCollection() {
+  const actor = await getCurrentActor();
+  const childId = actor.role === "child" ? actor.id : "seed_child";
+  const tickets = await prisma.evidence.findMany({
+    where: {
+      authorId: childId,
+      archivedAt: null,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      task: {
+        include: {
+          contract: {
+            include: {
+              wish: true,
+              versions: {
+                orderBy: {
+                  versionNumber: "desc",
+                },
+              },
+              diaryEntries: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+                take: 1,
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const totalFocusSeconds = await prisma.focusSession.aggregate({
+    where: {
+      childId,
+      state: "completed",
+    },
+    _sum: {
+      durationSeconds: true,
+    },
+  });
+
+  return {
+    tickets,
+    stats: {
+      rewardTicketCount: tickets.length,
+      totalFocusMinutes: Math.round((totalFocusSeconds._sum.durationSeconds ?? 0) / 60),
+    },
   };
 }

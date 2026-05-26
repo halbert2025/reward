@@ -9,6 +9,9 @@ test.describe("Reward MVP contract flow", () => {
   test("child confirms, starts pomodoro, completes, and submits reflection", async ({ page }) => {
     await completeChildContractFlow(page);
     await expect(page).toHaveURL(/\/child\/backyard\?status=cat-visit/);
+    await page.getByRole("link", { name: "查看小票收藏册" }).click();
+    await expect(page.getByRole("heading", { name: "猫猫奶茶小票收藏册" })).toBeVisible();
+    await expect(page.getByText("我完成了一次安静的 25 分钟练习。").first()).toBeVisible();
   });
 
   test("unsafe reward or contract input is blocked before preview", async ({ page }) => {
