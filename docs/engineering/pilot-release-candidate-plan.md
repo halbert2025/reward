@@ -39,8 +39,16 @@ Reason: the codebase and pilot documentation are ready for a release-candidate r
 4. Run:
 
 ```bash
+npm run pilot:rc-check
+```
+
+This wraps the internal RC rehearsal checks:
+
+```bash
 npm run env:check
 npm run predeploy:check
+npm test
+npm run typecheck
 npm run build
 ```
 

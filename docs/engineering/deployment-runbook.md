@@ -59,6 +59,12 @@ npm run predeploy:check
 npm run build
 ```
 
+For internal RC rehearsal, run the combined gate:
+
+```bash
+npm run pilot:rc-check
+```
+
 ## Deploy Steps
 
 1. Deploy the selected commit to the pilot host.

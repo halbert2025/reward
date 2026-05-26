@@ -20,7 +20,8 @@
     "verify:seed": "node scripts/verify-seed.mjs",
     "prisma:postgres-schema": "node scripts/write-postgres-schema.mjs",
     "env:check": "node scripts/validate-env.mjs",
-    "predeploy:check": "node scripts/predeploy-check.mjs"
+    "predeploy:check": "node scripts/predeploy-check.mjs",
+    "pilot:rc-check": "node scripts/pilot-rc-check.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
