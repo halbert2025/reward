@@ -623,4 +623,210 @@ docs/engineering/api-contract.md
 docs/engineering/testing-plan.md
 ```
 
+## 10. Alpha / Pilot 后续开发提示词补充
+
+本节用于承接已经完成 MVP Demo、P0-P8 测试用户版本准备之后的后续开发。后续仍然以本文作为主体开发提示词方案，不再单独维护零散提示词。
+
+### 当前阶段判断
+
+截至 2026-05-26，Reward 已完成 MVP 主闭环、P0-P8 Alpha / Pilot Readiness、P1-P4 评审修复终审、桌面端与移动端视觉验收、测试邀请模板和 Pilot launch checklist。当前阶段进入：
+
+```text
+P9：Pilot Launch & Controlled Test Ops
+```
+
+核心目标不再是扩大功能，而是让第一批测试家庭可以在受控、可回滚、可观察的条件下试用。
+
+### Prompt P9：Pilot Launch & Controlled Test Ops
+
+```text
+你是 Reward 项目的试点发布与受控运营负责人。
+
+目标：
+把当前已通过 P8 的 Reward Alpha/Pilot 版本，从“本地验收完成”推进到“可发送给第一批测试家庭”的受控试点准备状态。
+
+必须先读取：
+- docs/research/pilot-launch-checklist.md
+- docs/research/pilot-test-invite-template.md
+- docs/research/before-pilot-gate.md
+- docs/research/pilot-readiness-checklist.md
+- docs/safety/pilot-consent-text.md
+- docs/safety/privacy-and-retention.md
+- docs/safety/child-safety-sop.md
+- docs/reviews/2026.05.26 Reward P1-P4修复终审报告.md
+
+本次必须输出或更新：
+- docs/research/pilot-ops-responsibility-matrix.md
+- docs/research/pilot-family-test-pack.md
+- docs/research/pilot-daily-observation-template.md
+- docs/research/pilot-launch-checklist.md
+- 如果已有真实测试环境 URL：docs/reviews/<date> Reward测试环境冒烟验收记录.md
+
+任务：
+1. 创建试点运营责任矩阵：运营负责人、数据请求处理负责人、异常情绪/安全风险复核负责人、技术回滚负责人、测试家庭沟通负责人。
+2. 创建第一批测试家庭执行包：测试前发送话术、测试步骤说明、家长反馈问题清单、孩子友好说明、退出测试说明、数据请求说明。
+3. 创建上线前人工检查清单：测试环境 URL、admin allowlist、AI_PROVIDER_MODE、mock role switcher 是否关闭、health check、数据库环境、反馈入口、数据请求入口、回滚方式。
+4. 创建试点期间每日观察模板：登录、邀请、孩子番茄钟、家长回应、隐私/安全反馈、数据请求、是否暂停新邀请。
+5. 如果已有测试环境 URL：跑一次真实 URL 冒烟验收，归档桌面端和移动端截图，并更新 pilot-launch-checklist。
+
+硬性边界：
+- 不新增业务功能。
+- 不接真实 AI/Kimi。
+- 不开启真实照片上传。
+- 不接真实推送。
+- 不做支付、排名、开放儿童社交、学校/机构场景。
+
+验收标准：
+- 第一批测试家庭不需要开发者口头解释，也能按测试包完成流程。
+- 运营人员知道谁处理反馈、数据请求、安全风险和回滚。
+- 所有真实试点前剩余项都被标记为已完成、负责人待确认或明确后置。
+- 如已有真实 URL，必须有桌面端和移动端冒烟截图。
+```
+
+### Prompt P10：Pilot Feedback Iteration
+
+```text
+你是 Reward 项目的试点反馈迭代负责人。
+
+目标：
+在第一批测试家庭开始使用后，把反馈、bug、隐私担忧和体验问题转化为可执行的修复队列，并完成第一轮高优先级修复。
+
+必须先读取：
+- docs/research/pilot-daily-observation-template.md
+- docs/research/pilot-family-test-pack.md
+- docs/research/pilot-operations-runbook.md
+- docs/safety/child-safety-sop.md
+- docs/engineering/testing-plan.md
+- docs/reviews/最近一次验收或复审报告
+
+本次必须输出或更新：
+- docs/research/pilot-feedback-log.md
+- docs/research/pilot-feedback-triage.md
+- docs/reviews/<date> Reward Pilot反馈迭代报告.md
+- 必要的代码、测试和文档修复
+
+任务：
+1. 汇总测试家庭反馈：登录/邀请、孩子理解、番茄钟体验、家长回应、隐私和信任担忧、数据请求和退出、bug 和性能问题。
+2. 按 P0-P4 分级：P0 立即暂停试点，P1 继续邀请前必须修复，P2 本轮必须修复，P3 体验优化，P4 观察项。
+3. 对 P0/P1/P2 做修复：能通过文案或配置解决的，不扩大功能；涉及权限、隐私、状态机的，必须补测试；涉及 UI 的，必须补截图或人工验收记录。
+4. 更新测试家庭说明：如果流程或边界有变化，同步 pilot-family-test-pack。
+5. 运行必要验证：typecheck、unit test、build、受影响 E2E。
+
+硬性边界：
+- 不因为单个反馈直接扩大到 V1/V2 功能。
+- 不接真实 AI、真实照片上传、真实推送或支付。
+- 不为了“效率”绕过 ChildNote、witness、DataRequest 边界。
+
+验收标准：
+- 所有 P0/P1 反馈有明确关闭或暂停决策。
+- P2 反馈有修复、测试或明确排期。
+- 反馈日志可追踪：来源、角色、影响、处理结果、验证方式。
+- 没有引入新的隐私、权限或状态机回归。
+```
+
+### Prompt P11：Pilot Hardening
+
+```text
+你是 Reward 项目的试点稳定性加固负责人。
+
+目标：
+基于第一轮真实试点反馈和运行情况，加固部署、日志、数据处理、权限边界、移动端体验和运营流程，让 Pilot 可以稳定扩大到下一小批家庭。
+
+必须先读取：
+- docs/research/pilot-feedback-triage.md
+- docs/research/pilot-launch-checklist.md
+- docs/engineering/deployment-runbook.md
+- docs/engineering/observability-plan.md
+- docs/engineering/rollback-plan.md
+- docs/engineering/env-vars.md
+- docs/safety/privacy-and-retention.md
+- docs/safety/data-request-runbook.md
+
+本次必须输出或更新：
+- docs/engineering/pilot-hardening-plan.md
+- docs/research/pilot-ops-retrospective.md
+- docs/reviews/<date> Reward Pilot稳定性加固验收报告.md
+- 必要的代码、测试和文档修复
+
+任务：
+1. 加固部署和运行：环境变量模板、health check、日志最小化、错误记录和回滚说明。
+2. 加固数据处理：数据请求处理时限、导出/删除/封存人工流程、account-level 与 family-linked 审计一致性。
+3. 加固权限边界：parent / child / witness / admin 负向访问、ChildNote 默认私密、witness 不能看到证据、小票原文、金额、修复细节。
+4. 加固移动端体验：关键路径窄屏截图、按钮可点区域、表单错误文案、长列表性能边界。
+5. 加固运营流程：暂停新邀请机制、风险信号人工复核机制、每日观察节奏、退出测试处理闭环。
+
+硬性边界：
+- 只加固当前 Pilot 范围，不打开 V1 新功能。
+- 不引入复杂监控 SDK，除非已经明确供应商和隐私边界。
+- 不采集学校、精确位置、真实姓名、无关人脸、ChildNote 私密原文等非必要数据。
+
+验收标准：
+- Pilot 可以稳定扩大到下一小批家庭。
+- 回滚、暂停邀请、数据请求、安全复核都有明确负责人和流程。
+- 单测、typecheck、build、核心 E2E 通过。
+- 新增的监控或日志不违反数据最小化原则。
+```
+
+### Prompt P12：V1 Scope Reopen
+
+```text
+你是 Reward 项目的 V1 范围重开评审负责人。
+
+目标：
+在 Alpha / Pilot 跑通并完成至少一轮反馈迭代后，基于真实数据和反馈重新评估 V1 范围，而不是凭想象扩功能。
+
+必须先读取：
+- docs/research/pilot-feedback-log.md
+- docs/research/pilot-feedback-triage.md
+- docs/research/pilot-ops-retrospective.md
+- docs/analytics/mvp-metrics.md
+- docs/analytics/event-taxonomy.md
+- docs/product/product-freeze.md
+- docs/product/pilot-non-goals.md
+- docs/decisions/open-questions.md
+- docs/source/extracted/prd-v2.1.md
+- docs/source/extracted/18-questions-archive.md
+
+本次必须输出：
+- docs/product/v1-scope-candidates.md
+- docs/product/v1-not-now.md
+- docs/decisions/v1-scope-decisions.md
+- docs/reviews/<date> Reward V1范围重开评审报告.md
+
+任务：
+1. 汇总 Pilot 证据：哪些主流程跑通、哪些家庭卡住、哪些反馈高频、哪些功能被用户主动请求、哪些能力仍然没有证据支持。
+2. 重新评估 V1 候选：真实照片上传、真实推送、AI/Kimi 文案辅助、更完整见证人、低攀比灵感库、能力归档、时光邮局、多孩子 / 多家长、会员/Pro。
+3. 每个候选都必须写：用户证据、解决的问题、数据和隐私影响、技术复杂度、运营复杂度、是否会破坏 Reward 的非控制原则、V1 / V2 / Later / 永久不做。
+4. 更新 open questions：已关闭、继续观察、新增问题。
+5. 产出 V1 推荐路线：必做、可做、暂缓、禁止。
+
+硬性边界：
+- 不因为“看起来高级”就加入 V1。
+- 不默认打开真实 AI、真实照片、支付、排名、开放儿童社交、学校/机构场景。
+- 涉及未成年人数据的新能力必须先写隐私和安全评审，再进入实现。
+
+验收标准：
+- V1 范围基于 Pilot 证据，而不是功能愿望清单。
+- 每个候选都有明确取舍理由。
+- 不再把 V2/Later 功能混入 V1。
+- 输出可以直接用于下一轮 PRD 和开发计划。
+```
+
+### P9-P12 推荐执行顺序
+
+```text
+Alpha / Pilot 发布与迭代
+29. Prompt P9：Pilot Launch & Controlled Test Ops
+30. Prompt P10：Pilot Feedback Iteration
+31. Prompt P11：Pilot Hardening
+32. Prompt P12：V1 Scope Reopen
+```
+
+执行规则：
+
+- P9 必须在真实测试家庭邀请前完成。
+- P10 必须在收到第一批测试反馈后执行。
+- P11 必须在扩大第二批测试家庭前执行。
+- P12 必须在 Pilot 至少完成一轮反馈迭代后执行，不能提前打开 V1 范围。
+
 如果这些文件还没有，先不要让 Codex 写业务代码。Reward 这个项目最怕的不是开发慢，而是过早写出一个“看起来能跑、但产品灵魂跑偏”的 App。
