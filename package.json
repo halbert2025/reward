@@ -21,7 +21,8 @@
     "prisma:postgres-schema": "node scripts/write-postgres-schema.mjs",
     "env:check": "node scripts/validate-env.mjs",
     "predeploy:check": "node scripts/predeploy-check.mjs",
-    "pilot:rc-check": "node scripts/pilot-rc-check.mjs"
+    "pilot:rc-check": "node scripts/pilot-rc-check.mjs",
+    "pilot:url-smoke": "node scripts/pilot-url-smoke.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"

@@ -54,7 +54,12 @@ npm run build
 
 5. Deploy latest `main`.
 6. Verify `/api/health`.
-7. Execute P9B real URL smoke.
+7. Execute P9B real URL smoke:
+
+```bash
+npm run pilot:url-smoke -- https://<pilot-host>
+```
+
 8. Execute P9D Go / No-Go gate.
 
 ## Safety Locks

@@ -73,6 +73,18 @@ npm run pilot:rc-check
 4. Verify `/api/health`.
 5. Run the P9B real URL smoke path.
 
+For the first automated URL smoke check, run:
+
+```bash
+PILOT_BASE_URL=https://<pilot-host> npm run pilot:url-smoke
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:PILOT_BASE_URL="https://<pilot-host>"; npm.cmd run pilot:url-smoke
+```
+
 ## Postdeploy Smoke
 
 Minimum checks:
