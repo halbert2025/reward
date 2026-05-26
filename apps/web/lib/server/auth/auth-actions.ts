@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createDisplayCode, createUserSession, hashToken } from "./session-auth";
+import { recordOperationalEvent } from "../operational-events";
 import { prisma } from "../prisma";
 
 function clean(formData: FormData, key: string) {
@@ -25,6 +26,11 @@ export async function requestParentLogin(formData: FormData) {
   const email = normalizeEmail(clean(formData, "email"));
 
   if (!email.includes("@") || email.length > 160) {
+    await recordOperationalEvent({
+      level: "warn",
+      eventName: "login_request_invalid_email",
+      message: "Parent login requested with invalid email.",
+    });
     redirect("/auth/login?error=email");
   }
 
@@ -60,6 +66,12 @@ export async function verifyParentLogin(formData: FormData) {
   });
 
   if (!token) {
+    await recordOperationalEvent({
+      level: "warn",
+      eventName: "login_verify_failed",
+      message: "Parent login verification failed.",
+      metadataJson: { emailDomain: email.split("@")[1] ?? "unknown" },
+    });
     redirect(`/auth/verify?email=${encodeURIComponent(email)}&error=code`);
   }
 

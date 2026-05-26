@@ -40,7 +40,9 @@ export default async function ParentInvitesPage({ searchParams }: { searchParams
 
         {params.error ? (
           <p className="rounded-panel border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            Could not create invite. Please sign in as the parent of this family.
+            {params.error === "paused"
+              ? "New child invites are temporarily paused while the pilot team checks the system."
+              : "Could not create invite. Please sign in as the parent of this family."}
           </p>
         ) : null}
 

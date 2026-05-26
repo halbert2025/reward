@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
 import { getCurrentActor } from "./auth/session-auth";
+import { areNewInvitesPaused, recordOperationalEvent } from "./operational-events";
 import { createDisplayCode, createUserSession, hashToken } from "./auth/session-auth";
 import { PILOT_CONSENT_VERSION } from "./pilot-consent";
 import { prisma } from "./prisma";
@@ -125,7 +126,25 @@ export async function createChildInvite(formData: FormData) {
   const actor = await getCurrentActor();
   const familyId = clean(formData, "familyId");
 
+  if (areNewInvitesPaused()) {
+    await recordOperationalEvent({
+      level: "warn",
+      eventName: "child_invite_paused",
+      message: "Child invite creation blocked because new invites are paused.",
+      actorUserId: actor.id,
+      familyId,
+    });
+    redirect("/parent/invites?error=paused");
+  }
+
   if (actor.role !== "parent" && actor.role !== "co_signer") {
+    await recordOperationalEvent({
+      level: "warn",
+      eventName: "child_invite_permission_denied",
+      message: "Non-parent attempted to create a child invite.",
+      actorUserId: actor.id,
+      familyId,
+    });
     redirect("/parent/invites?error=permission");
   }
 

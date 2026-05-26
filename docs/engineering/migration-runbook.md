@@ -32,6 +32,12 @@ npm run test
 npm run build
 ```
 
+For a pilot incident, pause new child invites before applying risky changes:
+
+```env
+REWARD_INVITES_PAUSED=true
+```
+
 Required checks:
 
 - `APP_ENV` is `pilot` or `production`.

@@ -226,6 +226,12 @@ enum RiskSignalStatus {
   dismissed
 }
 
+enum OperationalEventLevel {
+  info
+  warn
+  error
+}
+
 model User {
   id            String          @id @default(cuid())
   displayName   String
@@ -338,6 +344,20 @@ model RiskSignal {
 
   @@index([familyId, status])
   @@index([status, level])
+}
+
+model OperationalEvent {
+  id           String                @id @default(cuid())
+  level        OperationalEventLevel
+  eventName    String
+  message      String
+  actorUserId  String?
+  familyId     String?
+  metadataJson Json?
+  createdAt    DateTime              @default(now())
+
+  @@index([level, eventName])
+  @@index([createdAt])
 }
 
 model AuthSession {
