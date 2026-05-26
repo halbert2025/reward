@@ -683,6 +683,289 @@ P9：Pilot Launch & Controlled Test Ops
 - 如已有真实 URL，必须有桌面端和移动端冒烟截图。
 ```
 
+### P9 拆分：从准备到可发给测试用户
+
+在执行 P10 之前，P9 需要进一步拆成 P9A-P9D。P9 的完成标准不是“文档准备好了”，而是“已经有一个真实测试用户可以打开、理解、走完、反馈、退出的版本”。
+
+### Prompt P9A：Pilot Release Candidate & Test Environment
+
+```text
+你是 Reward 项目的测试环境发布负责人。
+
+目标：
+把当前通过本地验收的版本发布成一个可被第一批测试用户访问的 Release Candidate。这里的“可访问”必须是用户可打开的真实 URL，或在用户明确要求离线交付时，提供可运行的桌面测试包。
+
+必须先读取：
+- docs/engineering/deployment-runbook.md
+- docs/engineering/deployment-data-plan.md
+- docs/engineering/env-vars.md
+- docs/engineering/migration-runbook.md
+- docs/engineering/observability-plan.md
+- docs/engineering/rollback-plan.md
+- docs/product/pilot-scope.md
+- docs/research/pilot-launch-checklist.md
+- docs/reviews/最近一次 Pilot / P1-P4 / P8 验收报告
+
+本次必须输出或更新：
+- docs/engineering/pilot-release-candidate-plan.md
+- docs/reviews/<date> Reward Pilot RC 发布检查记录.md
+- docs/research/pilot-launch-checklist.md
+
+任务：
+1. 明确本次 RC 的交付形态：
+   - 首选：受控测试环境 URL。
+   - 备选：可发送给测试者的本地运行包，但必须写清楚运行门槛和限制。
+2. 检查环境变量：
+   - APP_BASE_URL
+   - DATABASE_URL
+   - AUTH_SECRET
+   - ADMIN_EMAIL_ALLOWLIST
+   - AI_PROVIDER_MODE=mock 或 template
+   - STORAGE_PROVIDER=mock 或 disabled
+   - ENABLE_MOCK_ROLE_SWITCHER=false
+   - ENABLE_REAL_PUSH=false
+   - ENABLE_PAYMENTS=false
+3. 检查测试环境数据库：
+   - Pilot/production 不使用 SQLite。
+   - seed 数据不能自动写入真实测试环境。
+   - migration / predeploy check 可重复执行。
+4. 检查安全边界：
+   - 未登录不能访问家庭数据。
+   - parent/child/witness/admin 权限隔离仍然有效。
+   - ChildNote 默认不暴露给 parent/witness/admin 常规页面。
+   - witness 看不到证据、金额、修复争议、奖励小票原文。
+5. 检查部署回滚：
+   - 能暂停新邀请。
+   - 能关闭真实 AI、真实上传、真实推送。
+   - 能回滚到上一个稳定版本或关闭入口。
+
+验收标准：
+- 有一个明确的 RC 版本标识、commit hash 和访问方式。
+- 真实测试环境通过 predeploy check。
+- 环境变量和禁止项被逐项确认。
+- 若没有真实 URL，必须明确标记“尚不可发给外部测试用户”，只能作为内部桌面验收包。
+```
+
+### Prompt P9B：Real URL Smoke & User Journey Acceptance
+
+```text
+你是 Reward 项目的真实链接验收负责人。
+
+目标：
+对 P9A 产出的真实测试环境 URL 做一次用户视角验收，确认第一批测试家庭不需要开发者陪同也能走完主闭环。
+
+必须先读取：
+- docs/product/mvp-user-flows.md
+- docs/design/screen-spec.md
+- docs/research/pilot-family-test-pack.md
+- docs/research/pilot-launch-checklist.md
+- docs/safety/pilot-consent-text.md
+- docs/safety/privacy-and-retention.md
+- docs/engineering/testing-plan.md
+
+本次必须输出：
+- docs/reviews/<date> Reward Pilot Real URL Smoke Report.md
+- docs/reviews/<date> Reward Pilot Desktop Screenshot Acceptance.md
+- docs/reviews/<date> Reward Pilot Mobile Screenshot Acceptance.md
+- 必要时更新 docs/research/pilot-launch-checklist.md
+
+任务：
+1. 使用真实测试环境 URL 跑完整主流程：
+   - parent 登录或测试码进入。
+   - parent 确认试点告知与同意。
+   - parent 创建家庭。
+   - parent 生成 child 邀请码。
+   - child 加入家庭。
+   - parent 创建小约定。
+   - child 确认小约定。
+   - child 使用猫猫番茄钟。
+   - child 提交一句复盘或文字证据说明。
+   - parent 兑现 / 延期 / 待复盘回应。
+   - 系统生成家庭日记。
+   - parent 创建 witness 邀请。
+   - witness 只能查看安全摘要。
+   - parent 提交反馈或数据请求。
+2. 做负向验收：
+   - child 不能访问 parent-only 页面。
+   - witness 不能访问家庭后台、ChildNote、Evidence、RewardTicket 原文。
+   - 未同意试点告知不能创建家庭或邀请孩子。
+   - mock role switcher 在测试环境不可见。
+3. 做视觉验收：
+   - 桌面端至少 1366x768。
+   - 移动端至少 390px 和 430px 宽度。
+   - 猫猫番茄钟、奖励收藏、主流程按钮不能遮挡或溢出。
+4. 做可理解性验收：
+   - 页面文案不依赖开发者解释。
+   - 用户知道当前测试版不上传真实照片。
+   - 用户知道 AI/Kimi 当前为 mock/template。
+   - 用户知道如何反馈、退出测试、申请数据处理。
+
+验收标准：
+- 真实 URL 主闭环可完成。
+- 桌面端和移动端有截图记录。
+- 权限负向路径通过。
+- 所有失败项必须分 P0/P1/P2/P3/P4 记录；P0/P1 未关闭前不得发给测试用户。
+```
+
+### Prompt P9C：First Test User Handoff Pack
+
+```text
+你是 Reward 项目的测试用户交付负责人。
+
+目标：
+把已经通过真实链接验收的版本整理成“可以发给第一批测试家庭”的交付包。交付包必须让测试用户知道怎么开始、测什么、哪些不要做、如何反馈、如何退出。
+
+必须先读取：
+- docs/research/pilot-family-test-pack.md
+- docs/research/pilot-test-invite-template.md
+- docs/research/pilot-daily-observation-template.md
+- docs/research/pilot-ops-responsibility-matrix.md
+- docs/safety/pilot-consent-text.md
+- docs/safety/data-request-runbook.md
+- docs/safety/child-safety-sop.md
+- docs/product/pilot-non-goals.md
+
+本次必须输出或更新：
+- docs/research/pilot-user-handoff-pack.md
+- docs/research/pilot-test-invite-template.md
+- docs/research/pilot-family-test-pack.md
+- docs/research/pilot-support-and-escalation.md
+- docs/research/pilot-feedback-form-spec.md
+
+任务：
+1. 输出测试用户邀请内容：
+   - 一句话说明 Reward 是什么。
+   - 测试周期。
+   - 适合的家庭条件。
+   - 测试版边界。
+   - 访问链接或领取方式。
+   - 联系与反馈方式。
+2. 输出家长开始步骤：
+   - 打开链接。
+   - 登录或输入测试码。
+   - 阅读并确认试点告知。
+   - 创建家庭。
+   - 邀请孩子。
+   - 创建第一个小约定。
+3. 输出孩子友好说明：
+   - 简短、低压力、不像任务打卡软件。
+   - 说明猫猫番茄钟只是陪伴。
+   - 说明哪些内容会给家长看，哪些内容默认私密。
+4. 输出测试边界：
+   - 不上传真实照片。
+   - 不输入学校、住址、真实姓名、手机号、身份证、聊天记录截图。
+   - 不把 Reward 当惩罚、监控、锁机工具。
+   - 遇到不舒服可以停止使用并告诉家长。
+5. 输出反馈和退出方式：
+   - bug 反馈。
+   - 体验反馈。
+   - 数据导出 / 删除 / 封存请求。
+   - 退出测试。
+6. 输出内部支持流程：
+   - 谁接收反馈。
+   - 谁处理数据请求。
+   - 谁处理异常情绪或安全风险。
+   - 多久响应。
+   - 什么情况下暂停新邀请。
+
+验收标准：
+- 测试家庭不看开发文档也能开始。
+- 家长和孩子都有对应说明。
+- 退出、反馈和数据请求入口清楚。
+- 交付包不包含未完成或禁止承诺。
+```
+
+### Prompt P9D：Pilot Go / No-Go Gate
+
+```text
+你是 Reward 项目的第一批测试用户开闸负责人。
+
+目标：
+在真正把链接发给测试家庭前，做一次最终 Go / No-Go 判断。只有所有阻塞项关闭后，才允许进入 P10 的真实反馈迭代。
+
+必须先读取：
+- docs/research/pilot-launch-checklist.md
+- docs/research/pilot-user-handoff-pack.md
+- docs/research/pilot-support-and-escalation.md
+- docs/reviews/<date> Reward Pilot RC 发布检查记录.md
+- docs/reviews/<date> Reward Pilot Real URL Smoke Report.md
+- docs/reviews/<date> Reward Pilot Desktop Screenshot Acceptance.md
+- docs/reviews/<date> Reward Pilot Mobile Screenshot Acceptance.md
+- docs/engineering/rollback-plan.md
+- docs/safety/child-safety-sop.md
+- docs/safety/data-request-runbook.md
+
+本次必须输出：
+- docs/reviews/<date> Reward Pilot Go-No-Go Report.md
+- docs/research/pilot-first-batch-invite-log.md
+
+任务：
+1. 汇总发布前检查：
+   - 真实 URL。
+   - RC commit hash。
+   - 数据库环境。
+   - admin allowlist。
+   - mock role switcher 关闭。
+   - AI/Kimi 真实接入关闭或 template 降级。
+   - 真实照片上传关闭。
+   - 真实推送关闭。
+   - 支付和排名入口不存在。
+2. 汇总验收结果：
+   - 主闭环。
+   - 负向权限。
+   - 桌面截图。
+   - 移动截图。
+   - 数据请求。
+   - 反馈入口。
+   - 回滚和暂停邀请。
+3. 制定第一批邀请节奏：
+   - 先 1-3 组家庭。
+   - 明确观察窗口。
+   - 明确每天检查时间。
+   - 明确暂停条件。
+4. 建立匿名邀请记录：
+   - 不记录孩子真实姓名。
+   - 只记录家庭编号、邀请时间、状态、负责人、备注。
+5. 给出 Go / Conditional Go / No-Go 结论。
+
+Go 标准：
+- P0/P1 问题为 0。
+- P2 必须有修复或明确降级方案。
+- 用户交付包完成。
+- 真实 URL 主闭环完成。
+- 反馈、退出、数据请求、暂停邀请、回滚都有负责人。
+
+No-Go 标准：
+- 无真实 URL 且没有用户可运行包。
+- mock role switcher 在测试环境可见。
+- 未登录可访问家庭数据。
+- ChildNote、Evidence、RewardTicket、金额或修复争议错误暴露给 witness。
+- 没有退出或数据请求入口。
+- 没有暂停邀请和回滚方式。
+
+验收标准：
+- 报告结论明确。
+- 若 Go，可以直接发送 pilot-test-invite-template 给第一批测试家庭。
+- 若 Conditional Go，必须列出只允许内部试用或限定家庭试用的条件。
+- 若 No-Go，不得进入 P10，必须先修阻塞项。
+```
+
+### 测试用户可用版本最小定义
+
+```text
+一个版本只有同时满足以下条件，才算“可以给用户测试”：
+1. 有真实测试 URL 或明确可运行的测试包。
+2. 家长可登录、创建家庭、确认告知同意、邀请孩子。
+3. 孩子可通过邀请码加入并完成一个小约定闭环。
+4. 猫猫番茄钟可用，且不造成强刺激或控制感。
+5. 家长可回应，系统可生成家庭日记。
+6. witness 只能看到安全纪念摘要。
+7. 反馈、退出、数据请求入口可用。
+8. admin 可处理反馈、数据请求和风险信号，并有审计记录。
+9. mock role switcher、真实照片上传、真实推送、真实 AI、支付、排名都按 Pilot 边界关闭或降级。
+10. 真实 URL smoke、桌面截图、移动截图、权限负向测试有记录。
+```
+
 ### Prompt P10：Pilot Feedback Iteration
 
 ```text
@@ -817,6 +1100,10 @@ P9：Pilot Launch & Controlled Test Ops
 ```text
 Alpha / Pilot 发布与迭代
 29. Prompt P9：Pilot Launch & Controlled Test Ops
+29A. Prompt P9A：Pilot Release Candidate & Test Environment
+29B. Prompt P9B：Real URL Smoke & User Journey Acceptance
+29C. Prompt P9C：First Test User Handoff Pack
+29D. Prompt P9D：Pilot Go / No-Go Gate
 30. Prompt P10：Pilot Feedback Iteration
 31. Prompt P11：Pilot Hardening
 32. Prompt P12：V1 Scope Reopen
@@ -824,7 +1111,9 @@ Alpha / Pilot 发布与迭代
 
 执行规则：
 
-- P9 必须在真实测试家庭邀请前完成。
+- P9 必须先完成运营准备。
+- P9A-P9D 必须在真实测试家庭邀请前全部完成。
+- P9D 结论为 Go 或明确限定条件的 Conditional Go 后，才可以给第一批测试用户发链接。
 - P10 必须在收到第一批测试反馈后执行。
 - P11 必须在扩大第二批测试家庭前执行。
 - P12 必须在 Pilot 至少完成一轮反馈迭代后执行，不能提前打开 V1 范围。
