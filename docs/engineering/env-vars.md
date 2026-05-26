@@ -19,6 +19,10 @@ Stage: P2 Production Data Layer
 | `ALLOW_DEMO_SEED` | `false` | must be `false` | Demo seed is forbidden in pilot/production. |
 | `NOTIFICATION_MODE` | `in_app` | `in_app` | Real push is not in first-pilot scope. |
 | `REWARD_ENABLE_PAYMENTS` | `false` | must not be `true` | Payment is outside MVP/Pilot scope. |
+| `REWARD_PILOT_OPS_OWNER` | optional | required | Human owner for launch and daily pilot operations. |
+| `REWARD_DATA_REQUEST_OWNER` | optional | required | Human owner for export/deletion/sealing/exit requests. |
+| `REWARD_SAFETY_REVIEW_OWNER` | optional | required | Human owner for safety and risk review. |
+| `REWARD_ROLLBACK_OWNER` | optional | required | Human owner for deploy rollback and invite pause. |
 
 ## Compatibility Variables
 
@@ -55,6 +59,10 @@ AI_PROVIDER_MODE=mock
 ALLOW_DEMO_SEED=false
 NOTIFICATION_MODE=in_app
 REWARD_ENABLE_PAYMENTS=false
+REWARD_PILOT_OPS_OWNER=
+REWARD_DATA_REQUEST_OWNER=
+REWARD_SAFETY_REVIEW_OWNER=
+REWARD_ROLLBACK_OWNER=
 ```
 
 ## Pilot Example
@@ -70,6 +78,10 @@ AI_PROVIDER_MODE=mock
 ALLOW_DEMO_SEED=false
 NOTIFICATION_MODE=in_app
 REWARD_ENABLE_PAYMENTS=false
+REWARD_PILOT_OPS_OWNER="Pilot Ops <ops@example.com>"
+REWARD_DATA_REQUEST_OWNER="Data Owner <data@example.com>"
+REWARD_SAFETY_REVIEW_OWNER="Safety Owner <safety@example.com>"
+REWARD_ROLLBACK_OWNER="Rollback Owner <rollback@example.com>"
 ```
 
 ## Validation

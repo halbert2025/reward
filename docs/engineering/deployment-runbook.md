@@ -29,6 +29,10 @@ STORAGE_PROVIDER=mock
 AI_PROVIDER_MODE=mock
 ALLOW_DEMO_SEED=false
 NOTIFICATION_MODE=in_app
+REWARD_PILOT_OPS_OWNER=<name and contact>
+REWARD_DATA_REQUEST_OWNER=<name and contact>
+REWARD_SAFETY_REVIEW_OWNER=<name and contact>
+REWARD_ROLLBACK_OWNER=<name and contact>
 ```
 
 ## Predeploy Steps

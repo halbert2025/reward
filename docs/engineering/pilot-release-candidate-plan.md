@@ -30,6 +30,10 @@ Reason: the codebase and pilot documentation are ready for a release-candidate r
 | `AI_PROVIDER_MODE=mock` or `template` | Yes | Keep mock/template |
 | `ALLOW_DEMO_SEED=false` | Yes | Must verify on host |
 | `REWARD_INVITES_PAUSED=false` | Yes | Start false, can pause incident response |
+| `REWARD_PILOT_OPS_OWNER` | Yes | Pending operator assignment |
+| `REWARD_DATA_REQUEST_OWNER` | Yes | Pending operator assignment |
+| `REWARD_SAFETY_REVIEW_OWNER` | Yes | Pending operator assignment |
+| `REWARD_ROLLBACK_OWNER` | Yes | Pending operator assignment |
 
 ## Release Steps
 

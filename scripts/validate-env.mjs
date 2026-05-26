@@ -26,6 +26,12 @@ loadDotEnv();
 const APP_ENVS = new Set(["local", "development", "test", "pilot", "production"]);
 const STORAGE_PROVIDERS = new Set(["mock", "local", "s3", "r2"]);
 const AI_PROVIDER_MODES = new Set(["mock", "template", "kimi"]);
+const REQUIRED_REMOTE_OWNER_VARS = [
+  "REWARD_PILOT_OPS_OWNER",
+  "REWARD_DATA_REQUEST_OWNER",
+  "REWARD_SAFETY_REVIEW_OWNER",
+  "REWARD_ROLLBACK_OWNER",
+];
 
 function readEnv(name) {
   return process.env[name]?.trim() ?? "";
@@ -100,6 +106,12 @@ export function validateRewardEnv(env = process.env) {
 
     if (!adminEmails) {
       errors.push("REWARD_ADMIN_EMAILS is required for pilot/production admin access.");
+    }
+
+    for (const ownerVar of REQUIRED_REMOTE_OWNER_VARS) {
+      if (!(env[ownerVar] || "").trim()) {
+        errors.push(`${ownerVar} is required for pilot/production operations.`);
+      }
     }
 
     if (allowDemoSeed === "true") {
