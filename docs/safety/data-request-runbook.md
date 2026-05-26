@@ -54,4 +54,15 @@ Every handled request should have:
 - Original `DataRequest` row.
 - Status transition record in operations notes or admin tool.
 - `AuditLog` event for family-linked requests.
+- `OperationalEvent` event for account-level requests where `familyId` is empty.
 - Clear final handler note when complete or rejected.
+
+## Reward Ticket Scope
+
+Reward tickets are the child-facing collection view derived from completion `Evidence` rows.
+
+- Export: include reward ticket date, wish title, task title, reflection text, mock photo label, and parent-visible diary status when the requester is authorized to export the family data.
+- Deletion review: do not delete the underlying `Evidence` directly during an active contract review; first determine whether the request is child-originated, guardian-originated, or family-level.
+- Seal: sealed family data must hide reward ticket lists from normal product views while preserving the minimum audit and dispute-resolution record.
+- Exit pilot: include reward tickets in the data handling plan because they contain child-authored reflection text.
+- Witness access: witnesses must not receive raw reward tickets or child reflection text unless a future reviewed sharing rule explicitly allows it.

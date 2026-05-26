@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentActor } from "./auth/session-auth";
+import { recordOperationalEvent } from "./operational-events";
 import { prisma } from "./prisma";
 
 function clean(formData: FormData, key: string) {
@@ -105,6 +106,14 @@ export async function updateDataRequestStatus(formData: FormData) {
         metadataJson: { status, hasHandlerNote: Boolean(handlerNote) },
       },
     });
+  } else {
+    await recordOperationalEvent({
+      level: "info",
+      eventName: "account_data_request_status_updated",
+      message: "Admin updated an account-level data request.",
+      actorUserId: actor.id,
+      metadataJson: { requestId: request.id, status, hasHandlerNote: Boolean(handlerNote) },
+    });
   }
 
   revalidatePath("/admin/pilot");
@@ -142,6 +151,14 @@ export async function updateFeedbackStatus(formData: FormData) {
         entityId: feedback.id,
         metadataJson: { status, hasHandlerNote: Boolean(handlerNote) },
       },
+    });
+  } else {
+    await recordOperationalEvent({
+      level: "info",
+      eventName: "account_pilot_feedback_status_updated",
+      message: "Admin updated an account-level pilot feedback item.",
+      actorUserId: actor.id,
+      metadataJson: { feedbackId: feedback.id, status, hasHandlerNote: Boolean(handlerNote) },
     });
   }
 
@@ -185,6 +202,14 @@ export async function updateRiskSignalStatus(formData: FormData) {
         entityId: riskSignal.id,
         metadataJson: { status, hasReviewerNote: Boolean(reviewerNote) },
       },
+    });
+  } else {
+    await recordOperationalEvent({
+      level: "info",
+      eventName: "account_risk_signal_status_updated",
+      message: "Admin updated an account-level risk signal.",
+      actorUserId: actor.id,
+      metadataJson: { riskSignalId: riskSignal.id, status, hasReviewerNote: Boolean(reviewerNote) },
     });
   }
 
@@ -263,7 +288,7 @@ export async function createPilotFeedback(formData: FormData) {
   }
 
   if (type === "safety") {
-    await prisma.riskSignal.create({
+    const riskSignal = await prisma.riskSignal.create({
       data: {
         familyId,
         sourceType: "pilot_feedback",
@@ -272,6 +297,16 @@ export async function createPilotFeedback(formData: FormData) {
         summary: "Safety-related pilot feedback requires manual review.",
       },
     });
+
+    if (!familyId) {
+      await recordOperationalEvent({
+        level: "warn",
+        eventName: "account_risk_signal_created",
+        message: "Account-level safety feedback created a manual review risk signal.",
+        actorUserId: actor.id.startsWith("seed_") ? null : actor.id,
+        metadataJson: { feedbackId: feedback.id, riskSignalId: riskSignal.id },
+      });
+    }
   }
 
   redirect("/feedback?status=sent");

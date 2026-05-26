@@ -188,3 +188,20 @@
 | 操作按钮 | 保存纪念、回到小院、创建下一个约定、返回家庭首页。 |
 | 禁用文案 | 日记尚未准备好：这个纪念还在整理，请稍后再看。 |
 | 验收标准 | 生成 DiaryEntry；parent/child 可见；不包含私密 ChildNote；出现安静猫来访；可引导创建第二个约定。 |
+## P11 Child Reward Tickets
+
+| Item | Spec |
+|---|---|
+| Page goal | Let the child review completed pomodoro reward tickets without rankings or public sharing. |
+| Primary user | child |
+| Entry and exit | Entry: P06 child backyard "View reward tickets". Exit: back to child backyard. |
+| Default state | Show total ticket count, companionship minutes, and a newest-first list of reward tickets. |
+| Empty state | Show "No tickets yet" and explain that a ticket appears after completing a pomodoro and submitting one reflection. |
+| Loading state | Page may show standard route loading; no destructive action is available during loading. |
+| Error state | If ticket data cannot load, show a retry/back-to-backyard path and do not expose partial private data. |
+| No-permission state | Non-child or unauthenticated users are redirected by auth guard; witness access is not allowed. |
+| Large-data state | List should be paginated or capped before broad pilot; current pilot may show latest collection only after seed reset is deterministic. |
+| Required data | Evidence id, task title, wish title, reflection text, createdAt, optional mock photo label, diary status. |
+| Actions | Back to backyard. Future: export ticket image after separate review. |
+| Forbidden content | ChildNote, witness-only notes, repair details, real photo file, public ranking. |
+| Acceptance | Child can open `/child/rewards` after completing a pomodoro; newest ticket is visible; witness E2E confirms reward ticket raw content is not exposed. |

@@ -43,6 +43,47 @@ async function audit(eventName, entityType, entityId, actorUserId, actorType) {
 }
 
 async function main() {
+  await prisma.auditLog.deleteMany({
+    where: {
+      familyId: ids.family,
+    },
+  });
+  await prisma.notification.deleteMany({
+    where: {
+      familyId: ids.family,
+    },
+  });
+  await prisma.diaryEntry.deleteMany({
+    where: {
+      contractId: ids.contract,
+    },
+  });
+  await prisma.fulfillment.deleteMany({
+    where: {
+      contractId: ids.contract,
+    },
+  });
+  await prisma.repairCase.deleteMany({
+    where: {
+      contractId: ids.contract,
+    },
+  });
+  await prisma.witness.deleteMany({
+    where: {
+      contractId: ids.contract,
+    },
+  });
+  await prisma.evidence.deleteMany({
+    where: {
+      taskId: ids.task,
+    },
+  });
+  await prisma.focusSession.deleteMany({
+    where: {
+      taskId: ids.task,
+    },
+  });
+
   await prisma.user.upsert({
     where: { id: ids.parent },
     update: {
@@ -256,12 +297,6 @@ async function main() {
       contractId: ids.contract,
       body: "This is my private note. Parent should not see this by default.",
       visibility: "child_private",
-    },
-  });
-
-  await prisma.auditLog.deleteMany({
-    where: {
-      familyId: ids.family,
     },
   });
 

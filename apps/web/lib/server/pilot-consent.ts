@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentActor } from "./auth/session-auth";
+import { recordOperationalEvent } from "./operational-events";
 import { prisma } from "./prisma";
 
 export const PILOT_CONSENT_VERSION = "2026-05-26";
@@ -118,6 +119,18 @@ export async function createPilotDataRequest(formData: FormData) {
           type,
           status: "requested",
         },
+      },
+    });
+  } else {
+    await recordOperationalEvent({
+      level: "info",
+      eventName: "account_data_request_created",
+      message: "Account-level pilot data request created.",
+      actorUserId: actor.id,
+      metadataJson: {
+        requestId: request.id,
+        type,
+        status: "requested",
       },
     });
   }

@@ -20,6 +20,9 @@ export default defineConfig({
     process.env.PLAYWRIGHT_START_SERVER === "true"
       ? {
           command: "npm run dev",
+          env: {
+            REWARD_ADMIN_EMAILS: "admin@example.com"
+          },
           url: "http://localhost:3000",
           reuseExistingServer: true,
           timeout: 120_000

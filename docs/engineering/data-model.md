@@ -46,6 +46,21 @@
 | Notification | In-app reminder record. | B/D | retention delete |
 | AuditLog | Accountability trail. | D/E | retention only |
 
+## Derived Product Objects
+
+### RewardTicket
+
+RewardTicket is a product-facing derived object, not a separate persisted Prisma model in the current pilot build.
+
+- Source of truth: `Evidence` rows created by `submitWishReflection`.
+- Display surface: `/child/rewards`.
+- Included fields: ticket creation date, wish title, task title, child reflection excerpt, mock photo label when present, diary status, and static cat cafe artwork.
+- Sensitivity: C, because it contains child-authored reflection text.
+- Visibility: child and authorized family parent views only. Witness views must not expose RewardTicket raw content.
+- Export: included in family-safe exports as part of task completion evidence.
+- Deletion and sealing: follows the underlying `Evidence` lifecycle. Sealed family data must hide RewardTicket from normal collection views while retaining minimum audit records.
+- Retention: same as `Evidence` until a separate retention policy is approved.
+
 ## Entities
 
 ### User

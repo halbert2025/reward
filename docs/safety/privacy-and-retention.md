@@ -10,6 +10,17 @@
 - Request handling follows `docs/safety/data-request-runbook.md`.
 - Evidence photo handling follows `docs/safety/evidence-photo-policy.md`; first pilot stores mock descriptions only, not real photo files.
 
+## Reward ticket privacy boundary
+
+Reward tickets are the child-facing collection presentation of completion `Evidence`.
+
+- They may show the child reflection, wish title, task title, completion date, mock photo label, and diary status.
+- They are visible to the child and authorized parent/family views only.
+- Witnesses must not see reward tickets, raw reflection text, evidence metadata, or ChildNote content.
+- Reward tickets are included in export, deletion review, sealing, and pilot exit handling because they contain child-authored content.
+- A sealed family or sealed contract should hide reward tickets from normal collection pages while preserving the minimum audit trail.
+- Current pilot does not export reward ticket images; only structured data and text are in scope.
+
 ## 1. 家长能查看什么
 
 parent 默认可查看：
