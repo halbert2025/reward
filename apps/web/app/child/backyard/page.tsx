@@ -114,7 +114,7 @@ export default async function ChildBackyardPage({
 
         {!contract || !latestVersion || !task ? (
           <section className="rounded-panel border border-[var(--line)] bg-white/70 p-5">
-            <h2 className="text-lg font-semibold">你的小院还在</h2>
+            <h2 className="text-lg font-semibold">你的小院还在等一个愿望</h2>
             <p className="mt-2 text-sm text-[var(--muted)]">
               等下一个愿望准备好之后，再回来看看。
             </p>

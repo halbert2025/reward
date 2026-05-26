@@ -7,6 +7,7 @@ import {
   exitWishPomodoro,
   startWishPomodoro,
 } from "@/lib/server/child-actions";
+import { getPomodoroIpState, pomodoroIpStates } from "@/lib/pomodoro-ip-states";
 
 type WishPomodoroProps = {
   taskId: string;
@@ -17,12 +18,6 @@ type WishPomodoroProps = {
 
 const debugSeconds = 8;
 const halfTimeGuestSecond = Math.floor(debugSeconds / 2);
-const ipStates = [
-  { label: "待机", trigger: "还没开始", copy: "猫猫在擦杯子，等你准备好。" },
-  { label: "专注", trigger: "计时中", copy: "猫猫安静做饮品，不催促。" },
-  { label: "来访", trigger: "半程后", copy: "有客人坐下，空间仍然安静。" },
-  { label: "完成", trigger: "倒计时结束", copy: "递上一杯猫猫笑脸拉花。" },
-];
 
 function formatTime(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
@@ -40,11 +35,22 @@ export function WishPomodoro({
   const isRunning = taskState === "running";
   const readyToComplete = isRunning && remaining <= 0;
   const showGuest = isRunning && remaining <= halfTimeGuestSecond;
+  const currentIpState = readyToComplete
+    ? getPomodoroIpState("complete")
+    : showExit
+      ? getPomodoroIpState("exit")
+      : catLookedUp
+        ? getPomodoroIpState("look_up")
+        : showGuest
+          ? getPomodoroIpState("guest")
+          : isRunning
+            ? getPomodoroIpState("focus")
+            : getPomodoroIpState("idle");
   const sceneImage = readyToComplete
-    ? "/assets/pomodoro/coffee/barista_serve_drink_counter_close_01.png"
+    ? getPomodoroIpState("complete").primaryAsset
     : catLookedUp
-      ? "/assets/pomodoro/coffee/barista_look_up_counter_close_01.png"
-      : "/assets/pomodoro/coffee/barista_idle_counter_close_01.png";
+      ? getPomodoroIpState("look_up").primaryAsset
+      : getPomodoroIpState("idle").primaryAsset;
 
   useEffect(() => {
     if (!isRunning || remaining <= 0) {
@@ -86,7 +92,7 @@ export function WishPomodoro({
               fill
               className="absolute inset-0 h-full w-full object-cover opacity-85 transition-opacity duration-700"
               sizes="(min-width: 640px) 55vw, 100vw"
-              src="/assets/pomodoro/coffee/guest_back_bar_scene_wide_01.png"
+              src={getPomodoroIpState("guest").primaryAsset}
             />
           ) : null}
           <Image
@@ -106,13 +112,7 @@ export function WishPomodoro({
             />
           ) : null}
           <span className="absolute left-3 top-3 rounded-panel bg-[#102723]/75 px-3 py-1 text-xs font-semibold text-[#f7e7bb]">
-            {readyToComplete
-              ? "饮品完成"
-              : showGuest
-                ? "有猫猫安静坐下"
-                : catLookedUp
-                  ? "猫猫看了你一眼"
-                  : "安静制作中"}
+            {currentIpState.childCopy}
           </span>
         </button>
 
@@ -126,16 +126,18 @@ export function WishPomodoro({
       </div>
 
       <div className="grid gap-2 sm:grid-cols-4">
-        {ipStates.map((state) => (
-          <div
-            className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-3"
-            key={state.label}
-          >
-            <p className="text-sm font-semibold">{state.label}</p>
-            <p className="mt-1 text-xs text-[var(--muted)]">{state.trigger}</p>
-            <p className="mt-2 text-xs leading-5 text-[var(--muted)]">{state.copy}</p>
-          </div>
-        ))}
+        {pomodoroIpStates
+          .filter((state) => ["idle", "focus", "guest", "complete"].includes(state.id))
+          .map((state) => (
+            <div
+              className="rounded-panel border border-[var(--line)] bg-[var(--background)] p-3"
+              key={state.id}
+            >
+              <p className="text-sm font-semibold">{state.label}</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">{state.trigger}</p>
+              <p className="mt-2 text-xs leading-5 text-[var(--muted)]">{state.childCopy}</p>
+            </div>
+          ))}
       </div>
 
       {!isRunning ? (

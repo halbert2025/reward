@@ -20,6 +20,7 @@ Reward tickets are the child-facing collection presentation of completion `Evide
 - Reward tickets are included in export, deletion review, sealing, and pilot exit handling because they contain child-authored content.
 - A sealed family or sealed contract should hide reward tickets from normal collection pages while preserving the minimum audit trail.
 - Current pilot does not export reward ticket images; only structured data and text are in scope.
+- AI/Kimi boundary: reward ticket reflection text is not sent to a real external model in MVP. See `docs/safety/reward-ticket-ai-boundary.md`.
 
 ## 1. 家长能查看什么
 

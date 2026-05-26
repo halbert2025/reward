@@ -18,7 +18,7 @@ export default async function ChildRewardsPage() {
           </p>
           <h1 className="mt-2 text-4xl font-semibold leading-tight">猫猫奶茶小票收藏册</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-            这里只收藏你完成过的安静努力。小票可以给自己和家长回看，但不会放进公开排名。
+            这里只收藏你完成过的安静努力。小票可以给自己和家长回看，不会放进公开排名，也不会给见证人展示原文。
           </p>
         </header>
 
@@ -32,6 +32,12 @@ export default async function ChildRewardsPage() {
             <p className="mt-2 text-3xl font-semibold">{stats.totalFocusMinutes} 分钟</p>
           </div>
         </section>
+
+        {stats.hasMoreTickets ? (
+          <p className="rounded-panel border border-[var(--line)] bg-white/70 px-4 py-3 text-sm text-[var(--muted)]">
+            当前先展示最新 {stats.visibleTicketLimit} 张小票。完整导出会走家长数据请求流程，不在孩子端一次性加载全部历史记录。
+          </p>
+        ) : null}
 
         {tickets.length === 0 ? (
           <section className="rounded-panel border border-[var(--line)] bg-white/70 p-5">
@@ -60,7 +66,7 @@ export default async function ChildRewardsPage() {
                       src="/assets/pomodoro/coffee/drink_cat_latte_art_close_01.png"
                     />
                     <span className="absolute left-3 top-3 rounded-panel bg-[#102723]/80 px-3 py-1 text-xs font-semibold text-[#f7e7bb]">
-                      Ticket #{tickets.length - index}
+                      Ticket #{stats.rewardTicketCount - index}
                     </span>
                   </div>
                   <div className="grid gap-3 p-5">

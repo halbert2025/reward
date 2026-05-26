@@ -128,14 +128,28 @@ export async function getPomodoroState(taskId: string) {
 export async function getChildRewardCollection() {
   const actor = await getCurrentActor();
   const childId = actor.role === "child" ? actor.id : "seed_child";
+  const take = 24;
+  const rewardTicketCount = await prisma.evidence.count({
+    where: {
+      authorId: childId,
+      archivedAt: null,
+      task: {
+        archivedAt: null,
+      },
+    },
+  });
   const tickets = await prisma.evidence.findMany({
     where: {
       authorId: childId,
       archivedAt: null,
+      task: {
+        archivedAt: null,
+      },
     },
     orderBy: {
       createdAt: "desc",
     },
+    take,
     include: {
       task: {
         include: {
@@ -173,8 +187,10 @@ export async function getChildRewardCollection() {
   return {
     tickets,
     stats: {
-      rewardTicketCount: tickets.length,
+      rewardTicketCount,
       totalFocusMinutes: Math.round((totalFocusSeconds._sum.durationSeconds ?? 0) / 60),
+      visibleTicketLimit: take,
+      hasMoreTickets: rewardTicketCount > tickets.length,
     },
   };
 }

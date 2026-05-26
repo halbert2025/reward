@@ -194,6 +194,16 @@ Then:
 | `tests/e2e/contract-flow.spec.ts` | Onboarding, contract creation, child confirmation, task completion. |
 | `tests/e2e/fulfillment-flow.spec.ts` | Fulfilled, delayed, pending repair, diary generation. |
 | `tests/e2e/privacy-boundary.spec.ts` | ChildNote privacy, witness limits, AI/Kimi safety boundary. |
+| `tests/e2e/admin-operations.spec.ts` | Admin allowlist, status mutation, required notes, family AuditLog, account-level OperationalEvent. |
+
+## Pomodoro And Reward Ticket Acceptance Mapping
+
+| Area | Page | Code | Assertion |
+| --- | --- | --- | --- |
+| Pomodoro IP states | `/child/pomodoro/[taskId]` | `apps/web/lib/pomodoro-ip-states.ts` | Idle/focus/guest/complete states have triggers, copy, assets, fallback, and QA assertions. |
+| Pomodoro main flow | `/child/pomodoro/[taskId]` -> `/child/pomodoro/[taskId]/reflect` | `apps/web/components/wish-pomodoro.tsx` | Child can start, wait for completion, submit reflection, and return to backyard. |
+| Reward tickets | `/child/rewards` | `apps/web/app/child/rewards/page.tsx` | Newest ticket is visible after reflection; long list is capped to latest 24 in the child UI. |
+| Privacy boundary | `/witness`, `/child/rewards` | `apps/web/lib/server/child-workflow.ts` | Witness cannot see raw ticket/reflection content; exports and deletion follow Evidence lifecycle. |
 
 ## Safety Regression Checklist
 
